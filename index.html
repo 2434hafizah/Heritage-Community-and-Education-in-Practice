@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heritage, Community and Education in Practice | Kuching, Sarawak</title>
+  <meta name="description" content="A documentation repository for heritage-related academic–community engagement in Kuching, Sarawak." />
+  <style>
+    :root{
+      --bg: #f3efe9;
+      --surface: rgba(255,255,255,.62);
+      --surface-2: rgba(255,255,255,.78);
+      --stroke: rgba(30,30,30,.10);
+      --text: #1f1e1b;
+      --muted: rgba(31,30,27,.70);
+      --muted-2: rgba(31,30,27,.55);
+
+      --accent: #9a6b3d;     /* warm brown */
+      --accent-2:#5f6b3c;    /* olive */
+      --accent-3:#a6502d;    /* terracotta */
+
+      --shadow: 0 16px 50px rgba(0,0,0,.10);
+      --shadow-2: 0 10px 30px rgba(0,0,0,.08);
+
+      --radius: 18px;
+      --radius-sm: 12px;
+
+      --max: 1100px;
+      --narrow: 740px;
+
+      --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    *{ box-sizing: border-box; }
+    html{ scroll-behavior: smooth; }
+    body{
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% 10%, rgba(154,107,61,.18), transparent 55%),
+        radial-gradient(900px 450px at 85% 20%, rgba(95,107,60,.14), transparent 55%),
+        radial-gradient(800px 500px at 70% 85%, rgba(166,80,45,.12), transparent 60%),
+        var(--bg);
+      font-family: var(--sans);
+      line-height: 1.55;
+    }
+
+    a{ color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+      outline: 3px solid rgba(154,107,61,.35);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+
+    .skip{
+      position:absolute; left:-999px; top:auto; width:1px; height:1px; overflow:hidden;
+    }
+    .skip:focus{ left: 16px; top: 16px; width:auto; height:auto; padding: 10px 12px; background:#fff; border:1px solid var(--stroke); border-radius: 10px; box-shadow: var(--shadow-2); z-index: 9999; }
+
+    /* Shell */
+    .page{
+      max-width: 1250px;
+      margin: 44px auto;
+      padding: 0 18px 36px;
+    }
+    .frame{
+      background: rgba(255,255,255,.45);
+      border: 1px solid rgba(30,30,30,.10);
+      box-shadow: var(--shadow);
+      border-radius: 26px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Top nav */
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(243,239,233,.75);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(30,30,30,.08);
+    }
+    .navwrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .brand{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .brand .dot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 4px rgba(154,107,61,.18);
+    }
+    .brand strong{
+      font-family: var(--serif);
+      font-weight: 650;
+      letter-spacing: .2px;
+    }
+    .brand span{
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 6px;
+      font-family: var(--sans);
+    }
+
+    nav{
+      display:flex;
+      align-items:center;
+      gap: 18px;
+      font-size: 14px;
+      color: rgba(31,30,27,.78);
+    }
+    nav a{
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+    }
+    nav a:hover{
+      background: rgba(255,255,255,.55);
+      border-color: rgba(30,30,30,.08);
+    }
+    nav a[data-active="true"]{
+      background: rgba(255,255,255,.72);
+      border-color: rgba(30,30,30,.10);
+      color: rgba(31,30,27,.92);
+    }
+
+    .menuBtn{
+      display:none;
+      border:1px solid rgba(30,30,30,.10);
+      background: rgba(255,255,255,.65);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,.06);
+    }
+    .menuBtn svg{ display:block; }
+
+    /* Sections */
+    section{
+      padding: 56px 18px;
+      border-top: 1px solid rgba(30,30,30,.08);
+    }
+    section:first-of-type{ border-top: 0; }
+    .container{ max-width: var(--max); margin: 0 auto; }
+    .narrow{ max-width: var(--narrow); margin: 0 auto; }
+
+    h1,h2,h3{
+      font-family: var(--serif);
+      line-height: 1.18;
+      margin: 0 0 10px;
+      letter-spacing: .2px;
+    }
+    h1{ font-size: clamp(34px, 3.4vw, 54px); }
+    h2{ font-size: clamp(26px, 2.2vw, 34px); }
+    h3{ font-size: 20px; }
+
+    p{ margin: 0 0 14px; color: rgba(31,30,27,.84); }
+    .muted{ color: var(--muted); }
+    .muted-2{ color: var(--muted-2); }
+
+    .hero{
+      padding: 64px 18px 50px;
+      text-align:center;
+      background: linear-gradient(to bottom, rgba(255,255,255,.35), rgba(255,255,255,.10));
+    }
+    .hero .kicker{
+      font-family: var(--sans);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: rgba(31,30,27,.55);
+      margin-bottom: 10px;
+    }
+    .hero p{
+      max-width: 860px;
+      margin: 0 auto 18px;
+      color: rgba(31,30,27,.74);
+    }
+
+    .pillRow{
+      display:flex;
+      justify-content:center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .pill{
+      border: 1px solid rgba(30,30,30,.10);
+      background: rgba(255,255,255,.62);
+      padding: 12px 18px;
+      border-radius: 999px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.06);
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .pill:hover{ transform: translateY(-1px); background: rgba(255,255,255,.78); }
+    .pill.primary{ background: rgba(154,107,61,.15); border-color: rgba(154,107,61,.25); }
+    .pill.olive{ background: rgba(95,107,60,.14); border-color: rgba(95,107,60,.22); }
+    .pill.terra{ background: rgba(166,80,45,.14); border-color: rgba(166,80,45,.22); }
+
+    .divider{
+      height:1px; background: rgba(30,30,30,.08);
+      width: min(880px, 94%);
+      margin: 28px auto 22px;
+    }
+
+    .cards3{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .card{
+      background: var(--surface);
+      border: 1px solid rgba(30,30,30,.10);
+      border-radius: var(--radius);
+      padding: 18px 18px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.06);
+      min-height: 140px;
+    }
+    .card .top{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .icon{
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      border: 1px solid rgba(30,30,30,.10);
+      background: rgba(255,255,255,.55);
+    }
+    .card p{ margin: 0; color: rgba(31,30,27,.74); }
+
+    .why{
+      text-align:center;
+      padding-top: 8px;
+      padding-bottom: 6px;
+    }
+    .why strong{
+      font-family: var(--serif);
+      font-weight: 650;
+    }
+
+    /* Overview content blocks */
+    .sectionTitle{
+      text-align:center;
+      margin-bottom: 22px;
+    }
+    .block{
+      background: var(--surface-2);
+      border: 1px solid rgba(30,30,30,.10);
+      border-radius: 22px;
+      padding: 22px 22px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.06);
+    }
+    .block + .block{ margin-top: 14px; }
+    ul{
+      margin: 10px 0 0 18px;
+      padding: 0;
+      color: rgba(31,30,27,.78);
+    }
+    li{ margin: 6px 0; }
+
+    /* Outputs */
+    .outputList{
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .outputItem{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.62);
+      border: 1px solid rgba(30,30,30,.10);
+      box-shadow: 0 10px 26px rgba(0,0,0,.05);
+    }
+    .outputItem h3{ margin: 0 0 6px; }
+    .outputItem p{ margin: 0; max-width: 720px; }
+    .btn{
+      border: 1px solid rgba(154,107,61,.40);
+      background: linear-gradient(135deg, rgba(154,107,61,.92), rgba(154,107,61,.78));
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 650;
+      font-size: 13px;
+      white-space: nowrap;
+      box-shadow: 0 12px 26px rgba(154,107,61,.18);
+      cursor: pointer;
+    }
+    .btn:hover{ filter: brightness(1.03); }
+    .btn.secondary{
+      background: rgba(255,255,255,.72);
+      color: rgba(31,30,27,.88);
+      border-color: rgba(30,30,30,.14);
+      box-shadow: 0 10px 22px rgba(0,0,0,.06);
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    /* Contact form */
+    form{
+      margin-top: 18px;
+      background: rgba(255,255,255,.62);
+      border: 1px solid rgba(30,30,30,.10);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.05);
+    }
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    label{
+      display:block;
+      font-size: 13px;
+      color: rgba(31,30,27,.78);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input, select, textarea{
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(30,30,30,.14);
+      padding: 11px 12px;
+      background: rgba(255,255,255,.72);
+      color: rgba(31,30,27,.92);
+      font-size: 14px;
+    }
+    textarea{ min-height: 120px; resize: vertical; }
+    .consent{
+      display:flex;
+      align-items:flex-start;
+      gap: 10px;
+      margin: 10px 0 14px;
+      color: rgba(31,30,27,.72);
+      font-size: 13px;
+    }
+    .consent input{ width: 18px; height: 18px; margin-top: 2px; }
+    .formActions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    .privacy{
+      margin-top: 14px;
+      font-size: 13px;
+      color: rgba(31,30,27,.68);
+      border-top: 1px solid rgba(30,30,30,.10);
+      padding-top: 12px;
+    }
+
+    /* Footer */
+    footer{
+      text-align:center;
+      padding: 20px 16px;
+      color: rgba(31,30,27,.60);
+      font-size: 13px;
+      border-top: 1px solid rgba(30,30,30,.08);
+      background: rgba(255,255,255,.18);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .cards3{ grid-template-columns: 1fr; }
+      .outputItem{ flex-direction: column; align-items: flex-start; }
+      .grid2{ grid-template-columns: 1fr; }
+      .row2{ grid-template-columns: 1fr; }
+      nav{ display:none; }
+      nav.open{
+        display:flex;
+        position:absolute;
+        right: 18px;
+        top: 62px;
+        flex-direction: column;
+        background: rgba(255,255,255,.82);
+        border: 1px solid rgba(30,30,30,.10);
+        border-radius: 16px;
+        padding: 10px;
+        box-shadow: var(--shadow-2);
+        min-width: 210px;
+      }
+      .menuBtn{ display:inline-flex; }
+      header{ position: sticky; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header>
+    <div class="navwrap">
+      <a class="brand" href="#home" aria-label="Go to Home">
+        <span class="dot" aria-hidden="true"></span>
+        <strong>Heritage Repository</strong>
+        <span>Kuching, Sarawak</span>
+      </a>
+
+      <button class="menuBtn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <nav id="nav">
+        <a href="#home" data-nav>Home</a>
+        <a href="#overview" data-nav>Overview</a>
+
+        <!-- REQUIRED: redirect to external Historic Places site -->
+        <a href="https://hisyamhistamine-geowiz.github.io/Sarawak-Heritage-Repository/" target="_blank" rel="noopener">
+          Historic Places
+        </a>
+
+        <a href="#outputs" data-nav>Outputs</a>
+        <a href="#contact" data-nav>Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="frame">
+
+      <!-- HOME -->
+      <section id="home" class="hero">
+        <div class="container">
+          <div class="kicker">Heritage • Community • Education</div>
+          <h1>Heritage, Community and Education in Practice</h1>
+          <p>
+            A documentation repository for heritage-related <em>academic–community engagement</em> in Kuching.
+          </p>
+          <p class="muted">
+            This website preserves and shares project outputs, learning moments, and engagement experience from a heritage
+            education initiative. It ensures that documentation remains <em>accessible</em> and <em>useful</em> beyond the programme period.
+          </p>
+
+          <div class="pillRow" role="group" aria-label="Quick navigation">
+            <a class="pill primary" href="#overview">Project Overview</a>
+
+            <!-- REQUIRED: Historic Places redirects externally -->
+            <a class="pill olive" href="https://hisyamhistamine-geowiz.github.io/Sarawak-Heritage-Repository/" target="_blank" rel="noopener">
+              Historic Places
+            </a>
+
+            <a class="pill terra" href="#outputs">Project Outputs</a>
+          </div>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <h2 style="margin-bottom:8px;">What you will find here</h2>
+
+          <div class="cards3" aria-label="Key sections">
+            <div class="card">
+              <div class="top">
+                <div class="icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 3h10v18H7z" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M7 7h10" stroke="currentColor" stroke-width="1.8" />
+                  </svg>
+                </div>
+                <h3 style="margin:0;">Project Documentation</h3>
+              </div>
+              <p>An overview of the engagement process and key lessons learned.</p>
+            </div>
+
+            <div class="card">
+              <div class="top">
+                <div class="icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M12 10.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z" stroke="currentColor" stroke-width="1.8"/>
+                  </svg>
+                </div>
+                <h3 style="margin:0;">Historic Places &amp; Visual Reference</h3>
+              </div>
+              <p>Selected heritage places supported by a visual heritage repository.</p>
+            </div>
+
+            <div class="card">
+              <div class="top">
+                <div class="icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 19V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2Z" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M18 19H6" stroke="currentColor" stroke-width="1.8"/>
+                  </svg>
+                </div>
+                <h3 style="margin:0;">Project Outputs</h3>
+              </div>
+              <p>Flip Book, Manual Book, and reflective documentation.</p>
+            </div>
+          </div>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <div class="why">
+            <p class="muted">
+              <strong>Why documentation matters</strong><br />
+              Engagement does not end when an activity finishes. Documentation preserves learning and experience so future initiatives can build on what has already been done.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OVERVIEW -->
+      <section id="overview">
+        <div class="container">
+          <div class="sectionTitle">
+            <h2>Project Overview</h2>
+            <p class="muted">
+              This project documents an academic–community engagement related to heritage in Kuching.
+              Rather than creating new activities, the project focuses on capturing learning, participation, and collaboration using existing materials and brief reflections.
+              <em>The documentation is designed to be ethical, simple, and practical.</em>
+            </p>
+          </div>
+
+          <div class="narrow">
+            <div class="block">
+              <h3>Project Focus</h3>
+              <p class="muted">The project focuses on:</p>
+              <ul>
+                <li>Documenting engagement experience and learning moments</li>
+                <li>Preserving practice-based knowledge related to heritage education</li>
+                <li>Ensuring project outputs remain accessible beyond the programme period</li>
+              </ul>
+            </div>
+
+            <div class="block">
+              <h3>Project Outputs</h3>
+              <p class="muted">The documentation process produced the following outputs:</p>
+              <ul>
+                <li><strong>Flip Book</strong> – visual documentation of engagement activities and learning</li>
+                <li><strong>Manual Book</strong> – short guide capturing key lessons and engagement principles</li>
+                <li><strong>Website Repository</strong> – this website as a digital home for all outputs</li>
+                <li><strong>Reflection</strong> – a brief written reflection on practice and learning</li>
+              </ul>
+            </div>
+
+            <div class="block">
+              <h3>Ethical Approach</h3>
+              <p>
+                All materials are shared respectfully. Reflections are summarised, and no sensitive or identifying information is disclosed.
+                Documentation prioritises learning and community dignity.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- OUTPUTS -->
+      <section id="outputs">
+        <div class="container">
+          <div class="sectionTitle">
+            <h2>Project Outputs</h2>
+            <p class="muted">
+              This section presents the key outputs produced through the documentation process.
+              Each output translates engagement experience and learning into accessible formats that can be referred to beyond the project period.
+            </p>
+          </div>
+
+          <div class="narrow">
+            <div class="outputList">
+
+              <div class="outputItem">
+                <div>
+                  <h3>Flip Book</h3>
+                  <p>A visual documentation of the engagement activities, highlighting participation, learning moments, and heritage-related experiences.</p>
+                </div>
+                <!-- Replace href with your real PDF path -->
+                <a class="btn" href="assets/flip-book.pdf" download>Download Flip Book (PDF)</a>
+              </div>
+
+              <div class="outputItem">
+                <div>
+                  <h3>Manual Book</h3>
+                  <p>A short reflective guide that captures key lessons, engagement principles, and insights from the documentation process.</p>
+                </div>
+                <!-- Replace href with your real PDF path -->
+                <a class="btn" href="assets/manual-book.pdf" download>Download Manual Book (PDF)</a>
+              </div>
+
+              <div class="outputItem">
+                <div>
+                  <h3>Website Repository</h3>
+                  <p>This website serves as a digital repository that brings together all project outputs and supporting materials in one accessible platform. It ensures long-term visibility and reference beyond the programme duration.</p>
+                </div>
+                <span class="btn secondary" aria-hidden="true">Repository</span>
+              </div>
+
+              <div class="grid2" aria-label="Reflection options">
+                <div class="outputItem">
+                  <div>
+                    <h3>Reflection</h3>
+                    <p>A brief written reflection that links documented practice to heritage education, community learning, and engagement experience.</p>
+                  </div>
+                  <!-- Replace href with your real file/page -->
+                  <a class="btn" href="assets/reflection.pdf" download>Read / Download Reflection</a>
+                </div>
+
+                <div class="outputItem">
+                  <div>
+                    <h3>Reflection (Web)</h3>
+                    <p class="muted-2">If you prefer, you can also publish the reflection as an on-page article and link to it here.</p>
+                  </div>
+                  <!-- Replace href with your reflection page/anchor if needed -->
+                  <a class="btn secondary" href="#overview">View Overview</a>
+                </div>
+              </div>
+
+              <p class="muted-2" style="margin-top:10px;">
+                Tip: Place your PDFs inside an <code>assets/</code> folder (for GitHub Pages), then update the links above.
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact">
+        <div class="container">
+          <div class="sectionTitle">
+            <h2>Contact</h2>
+            <p class="muted">
+              For collaboration, feedback, or enquiries related to this documentation project, please use the form below.
+              This website serves as a reference repository, and messages are welcomed for clarification, academic use, or future engagement.
+            </p>
+          </div>
+
+          <div class="narrow">
+            <!-- No backend included. JS below will open a mail draft (mailto) by default. -->
+            <form id="contactForm">
+              <div class="row2">
+                <div>
+                  <label for="name">Full Name</label>
+                  <input id="name" name="name" type="text" autocomplete="name" required />
+                </div>
+                <div>
+                  <label for="email">Email Address</label>
+                  <input id="email" name="email" type="email" autocomplete="email" required />
+                </div>
+              </div>
+
+              <div style="margin-bottom:12px;">
+                <label for="purpose">Purpose of Enquiry</label>
+                <select id="purpose" name="purpose" required>
+                  <option value="" selected disabled>Select a purpose</option>
+                  <option>Collaboration</option>
+                  <option>Academic reference</option>
+                  <option>Feedback</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom:10px;">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" required></textarea>
+              </div>
+
+              <div class="consent">
+                <input id="consent" type="checkbox" required />
+                <label for="consent" style="margin:0; font-weight:500;">
+                  I understand that my information will be used only to respond to this enquiry.
+                </label>
+              </div>
+
+              <div class="formActions">
+                <button class="btn" type="submit">Send Message</button>
+                <button class="btn secondary" type="reset">Clear</button>
+              </div>
+
+              <div class="privacy">
+                <strong>Privacy Note:</strong>
+                All enquiries are handled responsibly. Personal information is used solely for communication purposes and is not shared with third parties.
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        Heritage, Community and Education in Practice | Kuching, Sarawak
+      </footer>
+
+    </div>
+  </main>
+
+  <script>
+    // Mobile nav
+    const menuBtn = document.getElementById('menuBtn');
+    const nav = document.getElementById('nav');
+
+    menuBtn?.addEventListener('click', () => {
+      const open = nav.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+
+    // Active link highlighting for internal sections
+    const internalLinks = [...document.querySelectorAll('a[data-nav]')];
+    const sections = ['home','overview','outputs','contact'].map(id => document.getElementById(id)).filter(Boolean);
+
+    const setActive = (id) => {
+      internalLinks.forEach(a => a.dataset.active = (a.getAttribute('href') === `#${id}`) ? "true" : "false");
+    };
+
+    const obs = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting).sort((a,b)=> b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target?.id) setActive(visible.target.id);
+    }, { threshold: [0.25, 0.5, 0.75] });
+
+    sections.forEach(s => obs.observe(s));
+    setActive('home');
+
+    // Contact form: opens an email draft (replace TO_EMAIL with your project email)
+    const TO_EMAIL = "your-email@example.com"; // <-- change this
+    const form = document.getElementById('contactForm');
+
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const purpose = document.getElementById('purpose').value;
+      const message = document.getElementById('message').value.trim();
+      const consent = document.getElementById('consent').checked;
+
+      if (!name || !email || !purpose || !message || !consent) {
+        alert("Please complete all fields and tick the consent box before sending.");
+        return;
+      }
+
+      const subject = encodeURIComponent(`[Website Enquiry] ${purpose}`);
+      const body = encodeURIComponent(
+        `Full Name: ${name}\nEmail: ${email}\nPurpose: ${purpose}\n\nMessage:\n${message}\n`
+      );
+
+      // Opens user's email client
+      window.location.href = `mailto:${TO_EMAIL}?subject=${subject}&body=${body}`;
+      form.reset();
+    });
+
+    // Close mobile menu after clicking an internal link
+    internalLinks.forEach(a => {
+      a.addEventListener('click', () => {
+        if (nav.classList.contains('open')) {
+          nav.classList.remove('open');
+          menuBtn.setAttribute('aria-expanded', "false");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
