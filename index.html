@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Heritage, Community and Education in Practice</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <style>
+    :root{
+      --purple:#2B0970;
+      --purple2:#362A7C;
+      --parchment:#F1E6DA;
+      --card:#FBF7F6;
+      --card2:#F9F3F0;
+      --border:#BEB4C0;
+      --gold:#A58B6E;
+      --text:#2b2b2b;
+      --muted:#5b5b5b;
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 18px;
+      --radius2: 14px;
+      --max: 1120px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    html{ scroll-behavior:smooth; }
+
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--parchment);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* Popup Styling */
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      padding: 5px;
+      width: 320px !important;
+    }
+    .popup-scroll-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 10px 0;
+      scroll-snap-type: x mandatory;
+    }
+    .popup-image-card {
+      flex: 0 0 200px;
+      scroll-snap-align: start;
+      text-align: center;
+    }
+    .popup-image-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: zoom-in;
+    }
+    .popup-image-card span {
+      font-size: 11px;
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .popup-details {
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+      margin: 10px 0;
+      background: #fdfdfd;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      white-space: pre-wrap; /* Maintains line breaks from .txt file */
+    }
+
+    /* UI Layout */
+    .container{ width: min(var(--max), calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 1; }
+    .header{ position: sticky; top: 0; z-index: 10; background: rgba(251,247,246,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(190,180,192,0.5); }
+    .navbar{ display:flex; align-items:center; justify-content:space-between; padding: 16px 0; gap: 16px; }
+    .brand{ font-weight: 900; color: var(--purple); letter-spacing: 0.2px; font-size: 15px; }
+    .nav{ display:flex; gap: 10px; align-items:center; }
+    .nav a{ color:#3d3d3d; font-weight: 800; font-size: 14px; padding: 8px 10px; border-radius: 12px; text-decoration: none; }
+    .nav a.active{ color: var(--purple); background: rgba(43,9,112,0.06); }
+    
+    .section{ padding: 34px 0; }
+    .card{ background: var(--card); border: 1px solid rgba(190,180,192,0.7); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .h1{ font-size: 34px; margin: 0 0 10px 0; color: var(--purple); }
+    .divider{ height:1px; background: rgba(190,180,192,0.55); margin: 22px 0; }
+    
+    .btn{ display:inline-flex; align-items:center; justify-content:center; padding: 12px 16px; border-radius: var(--radius2); border: none; cursor:pointer; font-weight: 900; font-size: 14px; text-decoration: none; transition: 0.2s; }
+    .btn.primary{ background: var(--gold); color: white; }
+    .btn.ghost{ background: white; color: var(--purple); border: 1px solid rgba(190,180,192,0.8); }
+    
+    .grid2{ display:grid; grid-template-columns: 300px 1fr; gap: 16px; }
+    @media (max-width: 860px){ .grid2{ grid-template-columns: 1fr; } .nav { display: none; } }
+    
+    label{ font-size: 12px; color: #555; font-weight: 900; display:block; margin-bottom: 4px; }
+    select{ width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container navbar">
+      <div class="brand">Heritage, Community and Education in Practice</div>
+      <nav class="nav">
+        <a href="#home" class="navLink">Home</a>
+        <a href="#places" class="navLink active">Historic Places</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="places" class="section">
+      <h1 class="h1">Historic Places</h1>
+      <div class="grid2">
+        <div class="card" style="padding: 20px; height: fit-content;">
+          <h3 style="margin-top:0">Filter Library</h3>
+          
+          <label>Category</label>
+          <select id="filterCategory"><option value="">All Categories</option></select>
+          
+          <div style="margin-top:10px">
+            <label>Ordinance</label>
+            <select id="filterOrdinance"><option value="">All Ordinances</option></select>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Year Built</label>
+            <select id="filterYear"><option value="">Any Year</option></select>
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:8px;">
+            <button class="btn primary" id="applyFilters" style="flex:1">Apply</button>
+            <button class="btn ghost" id="resetFilters">Reset</button>
+          </div>
+
+          <div class="divider"></div>
+          <p id="resultCount" style="font-size:13px; font-weight:bold; color:var(--muted)">Loading database...</p>
+          <div id="resultsList" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; padding-right:5px;"></div>
+        </div>
+
+        <div class="card" style="overflow:hidden; height: 700px; position: sticky; top: 110px;">
+          <div id="map" style="height: 100%; width: 100%;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Configuration
+    const SUPABASE_URL = "https://zodscjmvgpadtywcwqjc.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_ShaAaToR0VDOgN-T6vqTig_tOsD0aWJ";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let ALL_ROWS = [];
+    const map = L.map("map").setView([1.5533, 110.3592], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    const markersLayer = L.layerGroup().addTo(map);
+
+    async function init() {
+      const { data, error } = await supabase.from("database").select("*");
+      if (error) {
+        console.error("Database fetch error:", error);
+        return;
+      }
+
+      ALL_ROWS = data.map(r => ({
+        ...r,
+        Year_Built: r.Year_Built || r.year_built || r["Year Built"]
+      })).filter(r => r.Name);
+
+      populateFilters();
+      renderMarkers(ALL_ROWS);
+      updateResultsList(ALL_ROWS);
+      document.getElementById("resultCount").textContent = `${ALL_ROWS.length} places found`;
+    }
+
+    function populateFilters() {
+      const categories = [...new Set(ALL_ROWS.map(r => r.Category))].filter(Boolean).sort();
+      const ordinances = [...new Set(ALL_ROWS.map(r => r.Ordinance))].filter(Boolean).sort();
+      const years = [...new Set(ALL_ROWS.map(r => r.Year_Built))].filter(Boolean).sort((a, b) => a - b);
+
+      const catEl = document.getElementById("filterCategory");
+      const ordEl = document.getElementById("filterOrdinance");
+      const yearEl = document.getElementById("filterYear");
+
+      categories.forEach(c => catEl.innerHTML += `<option value="${c}">${c}</option>`);
+      ordinances.forEach(o => ordEl.innerHTML += `<option value="${o}">${o}</option>`);
+      years.forEach(y => yearEl.innerHTML += `<option value="${y}">${y}</option>`);
+    }
+
+    function renderMarkers(rows) {
+      markersLayer.clearLayers();
+      rows.forEach(row => {
+        const coords = parseCoords(row.Coordinate || row.coordinate);
+        if (coords) {
+          const marker = L.marker(coords).addTo(markersLayer);
+          marker.on('click', () => openCustomPopup(marker, row));
+        }
+      });
+    }
+
+    async function openCustomPopup(marker, row) {
+      const loadingContent = `<div style="padding:10px;"><strong>${row.Name}</strong><br>Loading...</div>`;
+      marker.bindPopup(loadingContent).openPopup();
+
+      const folderName = row.Name.trim();
+      const { data: files, error } = await supabase.storage.from("data").list(folderName);
+      
+      if (error || !files || files.length === 0) {
+        marker.setPopupContent(`<div>Error: Folder "${folderName}" not found or inaccessible.</div>`);
+        return;
+      }
+
+      let imagesHtml = "";
+      let detailsText = "Loading description...";
+
+      // 1. Find details.txt
+      const detailsFile = files.find(f => f.name.toLowerCase() === "details.txt");
+      
+      // 2. Filter Images
+      const imageFiles = files.filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
+      for (const img of imageFiles) {
+        const { data: imgUrl } = supabase.storage.from("data").getPublicUrl(`${folderName}/${img.name}`);
+        imagesHtml += `
+          <div class="popup-image-card">
+            <img src="${imgUrl.publicUrl}" onclick="window.open('${imgUrl.publicUrl}', '_blank')" style="cursor:zoom-in">
+            <span>${img.name}</span>
+          </div>`;
+      }
+
+      // Initial render with images while we wait for text fetch
+      const renderContent = (txt) => `
+        <div style="width:300px">
+          <h3 style="margin:0; color:var(--purple);">${row.Name}</h3>
+          <p style="font-size:11px; color:var(--muted)">${row.Category} | ${row.Year_Built}</p>
+          <div class="popup-details">${txt}</div>
+          <div class="popup-scroll-container">${imagesHtml || '<p style="font-size:11px;">No images found.</p>'}</div>
+        </div>`;
+
+      marker.setPopupContent(renderContent(detailsText));
+
+      // 3. Perform the fetch for details.txt with a Cache Buster
+      if (detailsFile) {
+        const { data: textUrl } = supabase.storage.from("data").getPublicUrl(`${folderName}/${detailsFile.name}`);
+        try {
+          // Adding a timestamp prevents the browser from using a broken cached version
+          const response = await fetch(`${textUrl.publicUrl}?t=${new Date().getTime()}`);
+          if (response.ok) {
+            detailsText = await response.text();
+          } else {
+            detailsText = "Description file found, but could not be read (CORS or Permissions error).";
+          }
+        } catch(e) {
+          detailsText = "Error fetching details. Check your Supabase CORS settings.";
+        }
+      } else {
+        detailsText = "No details.txt file found in this folder.";
+      }
+
+      // Final update to the popup content
+      marker.setPopupContent(renderContent(detailsText));
+    }
+
+    function parseCoords(str) {
+      if (!str) return null;
+      // Removes brackets if they exist and splits by comma
+      const clean = str.replace(/[\[\]]/g, '');
+      const parts = clean.split(',').map(Number);
+      return (parts.length === 2 && !isNaN(parts[0])) ? parts : null;
+    }
+
+    function applyFilters() {
+      const cat = document.getElementById("filterCategory").value;
+      const ord = document.getElementById("filterOrdinance").value;
+      const yr = document.getElementById("filterYear").value;
+
+      const filtered = ALL_ROWS.filter(r => {
+        if (cat && r.Category !== cat) return false;
+        if (ord && r.Ordinance !== ord) return false;
+        if (yr && String(r.Year_Built) !== yr) return false;
+        return true;
+      });
+
+      renderMarkers(filtered);
+      updateResultsList(filtered);
+      document.getElementById("resultCount").textContent = `${filtered.length} places found`;
+    }
+    async function openCustomPopup(marker, row) {
+      const folderName = row.Name.trim();
+      console.log("Attempting to load folder:", folderName); // This will show in F12 console
+      // ... rest of your code
+    }
+    function updateResultsList(rows) {
+      const list = document.getElementById("resultsList");
+      list.innerHTML = "";
+      rows.forEach(r => {
+        const btn = document.createElement("button");
+        btn.className = "btn ghost";
+        btn.style.textAlign = "left";
+        btn.style.display = "block";
+        btn.style.width = "100%";
+        btn.innerHTML = `
+          <div style="font-weight:bold; font-size:13px; color:var(--purple);">${r.Name}</div>
+          <div style="font-size:11px; color:var(--muted);">${r.Category}</div>
+        `;
+        btn.onclick = () => {
+          const coords = parseCoords(r.Coordinate || r.coordinate);
+          if (coords) {
+            map.flyTo(coords, 17);
+            // Search for the specific marker to trigger the popup
+            markersLayer.eachLayer(m => {
+              const latLng = m.getLatLng();
+              if (Math.abs(latLng.lat - coords[0]) < 0.0001 && Math.abs(latLng.lng - coords[1]) < 0.0001) {
+                openCustomPopup(m, r);
+              }
+            });
+          }
+        };
+        list.appendChild(btn);
+      });
+    }
+
+    // Event Listeners
+    document.getElementById("applyFilters").onclick = applyFilters;
+    document.getElementById("resetFilters").onclick = () => {
+      document.querySelectorAll('select').forEach(s => s.value = "");
+      applyFilters();
+    };
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
