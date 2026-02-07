@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Heritage, Community and Education in Practice</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet CSS (Map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 
   <style>
     :root{
@@ -35,316 +41,1196 @@
       line-height: 1.55;
     }
 
-    /* Popup Styling */
-    .leaflet-popup-content-wrapper {
-      border-radius: 12px;
-      padding: 5px;
-      width: 320px !important;
-    }
-    .popup-scroll-container {
-      display: flex;
-      overflow-x: auto;
-      gap: 10px;
-      padding: 10px 0;
-      scroll-snap-type: x mandatory;
-    }
-    .popup-image-card {
-      flex: 0 0 200px;
-      scroll-snap-align: start;
-      text-align: center;
-    }
-    .popup-image-card img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 8px;
-      cursor: zoom-in;
-    }
-    .popup-image-card span {
-      font-size: 11px;
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .popup-details {
-      max-height: 150px;
-      overflow-y: auto;
-      font-size: 13px;
-      margin: 10px 0;
-      background: #fdfdfd;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #eee;
-      white-space: pre-wrap; /* Maintains line breaks from .txt file */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      box-shadow: inset 0 0 0 18px rgba(0,0,0,0.03);
+      z-index: 0;
     }
 
-    /* UI Layout */
-    .container{ width: min(var(--max), calc(100% - 48px)); margin: 0 auto; position: relative; z-index: 1; }
-    .header{ position: sticky; top: 0; z-index: 10; background: rgba(251,247,246,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(190,180,192,0.5); }
-    .navbar{ display:flex; align-items:center; justify-content:space-between; padding: 16px 0; gap: 16px; }
-    .brand{ font-weight: 900; color: var(--purple); letter-spacing: 0.2px; font-size: 15px; }
-    .nav{ display:flex; gap: 10px; align-items:center; }
-    .nav a{ color:#3d3d3d; font-weight: 800; font-size: 14px; padding: 8px 10px; border-radius: 12px; text-decoration: none; }
-    .nav a.active{ color: var(--purple); background: rgba(43,9,112,0.06); }
-    
+    a{ color: var(--purple2); text-decoration:none; }
+    a:hover{ text-decoration: underline; }
+
+    .container{
+      width: min(var(--max), calc(100% - 48px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(251,247,246,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(190,180,192,0.5);
+    }
+
+    .navbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 16px 0;
+      gap: 16px;
+      position: relative;
+    }
+
+    .brand{
+      font-weight: 900;
+      color: var(--purple);
+      letter-spacing: 0.2px;
+      font-size: 15px;
+    }
+
+    .menuBtn{
+      display:none;
+      border:1px solid rgba(190,180,192,0.7);
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 900;
+      color: var(--purple);
+      cursor:pointer;
+    }
+
+    .nav{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a{
+      color:#3d3d3d;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
+    }
+
+    .nav a.active{
+      color: var(--purple);
+      background: rgba(43,9,112,0.06);
+      position: relative;
+    }
+    .nav a.active::after{
+      content:"";
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:3px;
+      height:3px;
+      border-radius: 999px;
+      background: var(--purple);
+    }
+
+    @media (max-width: 860px){
+      .menuBtn{ display:block; }
+      .nav{
+        display:none;
+        position:absolute;
+        right: 0;
+        top: 56px;
+        background: var(--card);
+        border: 1px solid rgba(190,180,192,0.8);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 230px;
+      }
+      .nav.open{ display:flex; }
+      .nav a{ padding: 10px 12px; }
+    }
+
+    /* Sections */
+    section{ scroll-margin-top: 92px; }
     .section{ padding: 34px 0; }
-    .card{ background: var(--card); border: 1px solid rgba(190,180,192,0.7); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .h1{ font-size: 34px; margin: 0 0 10px 0; color: var(--purple); }
-    .divider{ height:1px; background: rgba(190,180,192,0.55); margin: 22px 0; }
-    
-    .btn{ display:inline-flex; align-items:center; justify-content:center; padding: 12px 16px; border-radius: var(--radius2); border: none; cursor:pointer; font-weight: 900; font-size: 14px; text-decoration: none; transition: 0.2s; }
-    .btn.primary{ background: var(--gold); color: white; }
-    .btn.ghost{ background: white; color: var(--purple); border: 1px solid rgba(190,180,192,0.8); }
-    
-    .grid2{ display:grid; grid-template-columns: 300px 1fr; gap: 16px; }
-    @media (max-width: 860px){ .grid2{ grid-template-columns: 1fr; } .nav { display: none; } }
-    
-    label{ font-size: 12px; color: #555; font-weight: 900; display:block; margin-bottom: 4px; }
-    select{ width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: white; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(190,180,192,0.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .h1{
+      font-size: 34px;
+      margin: 0 0 10px 0;
+      color: var(--purple);
+      letter-spacing: 0.2px;
+    }
+
+    .lead{
+      color: #333;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(190,180,192,0.55);
+      margin: 22px 0;
+    }
+
+    .hero{ padding: 26px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(190,180,192,0.7);
+      background: var(--card2);
+      color: var(--purple2);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .heroActions{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 14px 16px;
+      border-radius: var(--radius2);
+      border: none;
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 14px;
+      transition: transform .08s ease, filter .2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn.primary{
+      background: var(--gold);
+      color: white;
+    }
+    .btn.primary:hover{
+      filter: brightness(0.95);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn.ghost{
+      background: white;
+      color: var(--purple);
+      border: 1px solid rgba(190,180,192,0.8);
+    }
+    .btn.ghost:hover{
+      filter: brightness(0.98);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .grid4{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 1000px){
+      .grid4{ grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px){
+      .grid4{ grid-template-columns: 1fr; }
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .outputCard{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .iconBadge{
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: var(--purple);
+      display:inline-block;
+    }
+
+    .h3{
+      margin: 0;
+      font-size: 16px;
+      color: var(--purple);
+    }
+
+    .desc{
+      margin: 0;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .noteBox{ padding: 16px 18px; }
+
+    .footer{
+      margin-top: 30px;
+      padding: 18px 0;
+      background: rgba(251,247,246,0.9);
+      border-top: 1px solid rgba(190,180,192,0.5);
+      color: #555;
+      font-size: 12px;
+    }
+
+    /* Contact form */
+    .formWrap{ padding: 22px; }
+    .formRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 860px){
+      .formRow{ grid-template-columns: 1fr; }
+    }
+    label{
+      font-size: 12px;
+      color: #555;
+      font-weight: 900;
+      display:block;
+      margin-bottom: 8px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(190,180,192,0.9);
+      background: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 140px; resize: vertical; }
+    .checkRow{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      margin: 14px 0 10px 0;
+    }
+    .checkRow input{ width:auto; margin-top:3px; }
+
+    /* Back to top */
+    .backToTop{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display:none;
+      z-index: 20;
+      border-radius: 999px;
+      padding: 12px 14px;
+      border: 1px solid rgba(190,180,192,0.85);
+      background: rgba(251,247,246,0.95);
+      color: var(--purple);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .backToTop:hover{ transform: translateY(-1px); }
+
+    /* Places layout tweak */
+    @media (max-width: 980px){
+      .placesGrid{
+        grid-template-columns: 1fr !important;
+      }
+      #map{ height: 420px !important; }
+    }
   </style>
 </head>
 
 <body>
+  <!-- EDIT YOUR LINKS HERE (Outputs + Map data config below) -->
+  <script>
+    const LINKS = {
+      manual: "https://drive.google.com/file/d/1GYaG3UaH8Opi4ml9tHkiGVVZanJlFY2u/view?usp=drive_link",
+      flipbook: "https://heyzine.com/flip-book/e057c72753.html",
+      repository: "https://2434hafizah.github.io/Heritage-Community-and-Education-in-Practice/",
+      article: "https://docs.google.com/document/d/1bBcN7k_N4VgX-tA8M0l8J67-KFoKWadJ/edit?usp=drive_link&ouid=107881167726786119191&rtpof=true&sd=true"
+    };
+  </script>
+
   <header class="header">
     <div class="container navbar">
       <div class="brand">Heritage, Community and Education in Practice</div>
-      <nav class="nav">
-        <a href="#home" class="navLink">Home</a>
-        <a href="#places" class="navLink active">Historic Places</a>
+      <button class="menuBtn" type="button" aria-label="Open menu">Menu</button>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#home" class="navLink active">Home</a>
+        <a href="#overview" class="navLink">Overview</a>
+        <a href="#places" class="navLink">Historic Places</a>
+        <a href="#outputs" class="navLink">Outputs</a>
+        <a href="#contact" class="navLink">Contact</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <section id="places" class="section">
-      <h1 class="h1">Historic Places</h1>
-      <div class="grid2">
-        <div class="card" style="padding: 20px; height: fit-content;">
-          <h3 style="margin-top:0">Filter Library</h3>
-          
-          <label>Category</label>
-          <select id="filterCategory"><option value="">All Categories</option></select>
-          
-          <div style="margin-top:10px">
-            <label>Ordinance</label>
-            <select id="filterOrdinance"><option value="">All Ordinances</option></select>
-          </div>
+    <!-- HOME -->
+    <section id="home" class="section">
+      <div class="card hero">
+        <h1 class="h1">Heritage, Community and Education in Practice</h1>
+        <p class="lead">A documentation repository for academic–community engagement in Kuching, Sarawak.</p>
 
-          <div style="margin-top:10px">
-            <label>Year Built</label>
-            <select id="filterYear"><option value="">Any Year</option></select>
-          </div>
-
-          <div style="margin-top:20px; display:flex; gap:8px;">
-            <button class="btn primary" id="applyFilters" style="flex:1">Apply</button>
-            <button class="btn ghost" id="resetFilters">Reset</button>
-          </div>
-
-          <div class="divider"></div>
-          <p id="resultCount" style="font-size:13px; font-weight:bold; color:var(--muted)">Loading database...</p>
-          <div id="resultsList" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; padding-right:5px;"></div>
+        <div style="margin-top:14px;">
+          <span class="pill">Prepare → Implement → Monitor → Review</span>
         </div>
 
-        <div class="card" style="overflow:hidden; height: 700px; position: sticky; top: 110px;">
-          <div id="map" style="height: 100%; width: 100%;"></div>
+        <div class="heroActions">
+          <a class="btn primary" href="#outputs">Explore Outputs</a>
+          <a class="btn ghost" href="#places">View Historic Places</a>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="small">
+          This website consolidates engagement evidence, learning outputs, and public reference materials produced through
+          heritage-related academic–community work in Kuching. It supports ethical documentation, clear learning claims,
+          and continuity planning across repeated engagement cycles.
+        </p>
+      </div>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="card noteBox">
+          <h2 class="h3" style="font-size:18px;">Quick Links</h2>
+          <div class="divider"></div>
+
+          <div class="heroActions">
+            <a class="btn primary" target="_blank" rel="noopener" id="btnManual">Manual Book (PDF)</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnFlipbook">Flipbook</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnRepo">Website Repository</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnArticle">Academic Article</a>
+          </div>
+
+          <p class="small" style="margin-top:14px;">
+            Manual book is registered. Website repository is under continuous improvement. Academic article is submitted.
+          </p>
+        </div>
+      </div>
+
+      <div class="section" style="padding-top:0;">
+        <h2 class="h3" style="font-size:20px; margin-bottom:12px;">Key Outputs</h2>
+
+        <div class="grid4">
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Manual Book</h3>
+            <p class="desc">Registered handbook with tools and templates.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkManualSmall">Open PDF</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Flipbook</h3>
+            <p class="desc">Online flipbook of evidence and reflections.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkFlipbookSmall">Open Online</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Website Repository</h3>
+            <p class="desc">Under continuous improvement (public repository).</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkRepoSmall">Open Site</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Academic Article</h3>
+            <p class="desc">Submitted academic writing output.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkArticleSmall">Open Doc</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section id="overview" class="section">
+      <h1 class="h1">Overview</h1>
+      <p class="lead">
+        A documentation-oriented platform that records how heritage-based academic–community engagement is planned,
+        implemented, monitored, and improved.
+      </p>
+      <p class="small" style="margin-top:10px;">
+        Designed for educational reference, evidence discipline, and continuity planning.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2">
+          <div class="card noteBox">
+            <h2 class="h3" style="font-size:18px;">Project Snapshot</h2>
+            <div class="divider"></div>
+            <p class="desc"><b>Location:</b> Kuching, Sarawak</p>
+            <p class="desc"><b>Focus:</b> Heritage learning, documentation, and continuity planning</p>
+            <p class="desc"><b>Approach:</b> Evidence-based practice with ethical safeguards</p>
+          </div>
+
+          <div class="card noteBox">
+            <h2 class="h3" style="font-size:18px;">What You Can Do Here</h2>
+            <div class="divider"></div>
+            <p class="desc">• Browse historic places directly in this website (map + filters + place panel)</p>
+            <p class="desc">• Access outputs: manual, flipbook, repository website, academic article</p>
+            <p class="desc">• Use as reference for teaching, learning, and engagement continuity</p>
+          </div>
+        </div>
+
+        <div class="card noteBox" style="margin-top:16px;">
+          <h2 class="h3" style="font-size:18px;">Managed Workflow Cycle</h2>
+          <div class="divider"></div>
+          <div class="heroActions">
+            <span class="pill">Prepare</span>
+            <span class="pill">Implement</span>
+            <span class="pill">Monitor</span>
+            <span class="pill">Review</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIC PLACES (Embedded Map + Supabase) -->
+    <section id="places" class="section">
+      <h1 class="h1">Historic Places</h1>
+      <p class="lead">
+        Browse heritage places directly here. Click a point to view details and images.
+      </p>
+      <p class="small" style="margin-top:10px;">
+        Data loads from your Supabase table. Images and details.txt load from your Supabase storage bucket.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2 placesGrid" style="grid-template-columns: 360px 1fr;">
+          <!-- Filters panel -->
+          <div class="card noteBox" style="height: fit-content;">
+            <h2 class="h3" style="font-size:18px;">Filter</h2>
+            <p class="small" style="margin-top:6px;">
+              Filter by Year Built, Category, and Ordinance.
+            </p>
+
+            <div class="divider"></div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label for="filterCategory">Category</label>
+                <select id="filterCategory">
+                  <option value="">All</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="filterOrdinance">Ordinance</label>
+                <select id="filterOrdinance">
+                  <option value="">All</option>
+                </select>
+              </div>
+
+              <div class="grid2" style="grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label for="yearMin">Year Built (Min)</label>
+                  <input id="yearMin" type="number" placeholder="e.g., 1850" />
+                </div>
+                <div>
+                  <label for="yearMax">Year Built (Max)</label>
+                  <input id="yearMax" type="number" placeholder="e.g., 2024" />
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn primary" id="applyFilters" type="button">Apply</button>
+                <button class="btn ghost" id="resetFilters" type="button">Reset</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <div>
+                <h3 class="h3" style="font-size:14px;">Results</h3>
+                <p class="small" id="resultCount" style="margin-top:6px;">Loading…</p>
+                <pre id="debugBox" class="small" style="margin-top:10px; white-space:pre-wrap; background:#fff; border:1px solid rgba(190,180,192,0.7); padding:10px; border-radius:12px; display:none;"></pre>
+
+                <div id="resultsList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+
+              <div class="divider"></div>
+              <p class="small">
+                Tip: Click a result button to jump the map and open the place panel.
+              </p>
+            </div>
+          </div>
+
+          <!-- Map + detail panel -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card" style="overflow:hidden;">
+              <div id="map" style="height: 520px; width: 100%;"></div>
+            </div>
+
+            <div class="card noteBox" id="placePanel" style="display:none;">
+              <h2 class="h3" id="panelTitle" style="font-size:20px;">Place</h2>
+              <p class="small" id="panelMeta" style="margin-top:6px;"></p>
+              <div class="divider"></div>
+
+              <div id="panelDetails" class="desc" style="white-space:pre-wrap;"></div>
+
+              <div class="divider"></div>
+
+              <h3 class="h3" style="font-size:16px;">Images</h3>
+              <p class="small" style="margin-top:6px;">
+                Images load from the Supabase bucket folder named exactly the same as the place <b>Name</b>.
+              </p>
+
+              <div id="panelGallery" style="margin-top:12px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OUTPUTS -->
+    <section id="outputs" class="section">
+      <h1 class="h1">Outputs</h1>
+      <p class="lead">Access the core deliverables produced for documentation, learning, and continuity planning.</p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2">
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Manual Book (Registered)</h3>
+            <p class="desc">Training handbook with step-by-step workflow guidance, tools, and copy-ready templates.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnManual2">Open Manual (PDF)</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Flipbook (Online)</h3>
+            <p class="desc">Photos, activity evidence, permissions, outputs, and reflections.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnFlipbook2">Open Flipbook</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Website Repository (Under Continuous Improvement)</h3>
+            <p class="desc">Public reference website for learning access and documentation repository.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnRepo2">Open Website Repository</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Academic Article (Submitted)</h3>
+            <p class="desc">Google Doc version of the submitted academic article.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnArticle2">Open Academic Article</a>
+          </div>
+        </div>
+
+        <div class="card noteBox" style="margin-top:16px;">
+          <h2 class="h3" style="font-size:16px;">Reference note</h2>
+          <p class="small" style="margin-top:8px;">
+            All materials are shared for educational and academic reference. Please use responsibly and cite appropriately.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section">
+      <h1 class="h1">Contact</h1>
+      <p class="lead">For collaboration, feedback, or enquiries, please use the form below.</p>
+      <p class="desc" style="margin-top:8px;">
+        This site is a reference repository. Messages are welcomed for clarification, academic use, or future engagement.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="card formWrap">
+          <form id="contactForm">
+            <div class="formRow">
+              <div>
+                <label for="name">Full Name</label>
+                <input id="name" name="name" type="text" placeholder="Your name" required/>
+              </div>
+              <div>
+                <label for="email">Email Address</label>
+                <input id="email" name="email" type="email" placeholder="you@email.com" required/>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <label for="purpose">Purpose of Enquiry</label>
+              <select id="purpose" name="purpose" required>
+                <option value="" selected disabled>Select a purpose</option>
+                <option>Collaboration</option>
+                <option>Feedback</option>
+                <option>Academic reference / citation</option>
+                <option>Community engagement enquiry</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div style="margin-top:14px;">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Write your message…" required></textarea>
+            </div>
+
+            <div class="checkRow">
+              <input id="consent" type="checkbox"/>
+              <div class="small">I understand my information will be used only to respond to this enquiry.</div>
+            </div>
+
+            <button class="btn primary" type="submit">Send Message</button>
+
+            <p class="small" style="margin-top:14px;">
+              Privacy Note: Personal information is used solely for communication purposes and is not shared with third parties.
+            </p>
+          </form>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <footer class="footer">
+    <div class="container">Heritage, Community and Education in Practice | Kuching, Sarawak</div>
+  </footer>
+
+  <button id="backToTop" class="backToTop" type="button" aria-label="Back to top">↑</button>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- Main JS (Supabase + UI) -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Configuration
+    /************************************************************
+     * 1) SUPABASE CONFIG (FILL THESE 4 VALUES)
+     ************************************************************/
     const SUPABASE_URL = "https://zodscjmvgpadtywcwqjc.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_ShaAaToR0VDOgN-T6vqTig_tOsD0aWJ";
+    const BUCKET_NAME = "data";   // e.g. "heritage-images" "heritage-images"
+    const TABLE_NAME  = "database";    // e.g. "heritage_places" "heritage_places"
+
+    // If your bucket is PRIVATE, set this true and create signed URLs.
+    // (Public bucket works with getPublicUrl)
+    const USE_SIGNED_URLS = false;
+
+    // If using signed URLs, how long they stay valid (seconds)
+    const SIGNED_URL_EXPIRES_IN = 60 * 30; // 30 minutes
+
+    /************************************************************
+     * 2) QUICK LINKS (Home/Outputs)
+     ************************************************************/
+    const setHref = (id, href) => {
+      const el = document.getElementById(id);
+      if (el) el.href = href;
+    };
+
+    setHref("btnManual", LINKS.manual);
+    setHref("btnFlipbook", LINKS.flipbook);
+    setHref("btnRepo", LINKS.repository);
+    setHref("btnArticle", LINKS.article);
+
+    setHref("btnManual2", LINKS.manual);
+    setHref("btnFlipbook2", LINKS.flipbook);
+    setHref("btnRepo2", LINKS.repository);
+    setHref("btnArticle2", LINKS.article);
+
+    setHref("lnkManualSmall", LINKS.manual);
+    setHref("lnkFlipbookSmall", LINKS.flipbook);
+    setHref("lnkRepoSmall", LINKS.repository);
+    setHref("lnkArticleSmall", LINKS.article);
+
+    /************************************************************
+     * 3) NAV + BACK TO TOP + CONTACT FORM
+     ************************************************************/
+    // Mobile nav toggle
+    const menuBtn = document.querySelector(".menuBtn");
+    const nav = document.querySelector(".nav");
+    if (menuBtn && nav) {
+      menuBtn.addEventListener("click", () => nav.classList.toggle("open"));
+    }
+    // Close mobile menu after click
+    document.querySelectorAll(".nav a").forEach(a => {
+      a.addEventListener("click", () => nav.classList.remove("open"));
+    });
+
+    // Active nav highlight based on scroll
+    const navLinks = Array.from(document.querySelectorAll(".navLink"));
+    const sections = navLinks.map(a => document.querySelector(a.getAttribute("href")));
+    const setActive = () => {
+      const y = window.scrollY + 120;
+      let current = sections[0];
+      for (const s of sections){
+        if (s && s.offsetTop <= y) current = s;
+      }
+      navLinks.forEach(a => a.classList.remove("active"));
+      const activeLink = navLinks.find(a => a.getAttribute("href") === "#" + current.id);
+      if (activeLink) activeLink.classList.add("active");
+    };
+    window.addEventListener("scroll", setActive);
+    window.addEventListener("load", setActive);
+
+    // Back to top
+    const backToTop = document.getElementById("backToTop");
+    window.addEventListener("scroll", () => {
+      backToTop.style.display = window.scrollY > 500 ? "inline-flex" : "none";
+    });
+    backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+    // Contact form demo
+    const contactForm = document.getElementById("contactForm");
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const consent = document.getElementById("consent");
+      if (!consent.checked) {
+        alert("Please tick the consent checkbox before sending.");
+        return;
+      }
+      alert("Message prepared. (This site does not send messages automatically.)");
+      contactForm.reset();
+    });
+
+    /************************************************************
+     * 4) SUPABASE CLIENT
+     ************************************************************/
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    /************************************************************
+     * 5) MAP + UI REFERENCES
+     ************************************************************/
+    const elCategory = document.getElementById("filterCategory");
+    const elOrdinance = document.getElementById("filterOrdinance");
+    const elYearMin = document.getElementById("yearMin");
+    const elYearMax = document.getElementById("yearMax");
+    const elApply = document.getElementById("applyFilters");
+    const elReset = document.getElementById("resetFilters");
+    const elCount = document.getElementById("resultCount");
+    const elList = document.getElementById("resultsList");
+
+    const panel = document.getElementById("placePanel");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelMeta = document.getElementById("panelMeta");
+    const panelDetails = document.getElementById("panelDetails");
+    const panelGallery = document.getElementById("panelGallery");
+
     let ALL_ROWS = [];
-    const map = L.map("map").setView([1.5533, 110.3592], 13);
+    let FILTERED_ROWS = [];
+
+    // Map default (Kuching)
+    const map = L.map("map", { zoomControl: true }).setView([1.5533, 110.3592], 12);
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '© OpenStreetMap contributors'
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
-    
+
     const markersLayer = L.layerGroup().addTo(map);
 
-    async function init() {
-      const { data, error } = await supabase.from("database").select("*");
-      if (error) {
-        console.error("Database fetch error:", error);
-        return;
+    /************************************************************
+     * 6) HELPERS
+     ************************************************************/
+    function parseCoordinate(value){
+      // Supports:
+      // "1.5533,110.3592" OR "[1.5533,110.3592]" OR {"lat":..,"lng":..}
+      if (!value) return null;
+
+      if (typeof value === "object" && value.lat != null && value.lng != null){
+        return [Number(value.lat), Number(value.lng)];
       }
 
-      ALL_ROWS = data.map(r => ({
-        ...r,
-        Year_Built: r.Year_Built || r.year_built || r["Year Built"]
-      })).filter(r => r.Name);
+      const s = String(value).trim()
+        .replace("[","").replace("]","")
+        .replace("(", "").replace(")", "");
 
-      populateFilters();
-      renderMarkers(ALL_ROWS);
-      updateResultsList(ALL_ROWS);
-      document.getElementById("resultCount").textContent = `${ALL_ROWS.length} places found`;
+      const parts = s.split(",").map(x => x.trim());
+      if (parts.length < 2) return null;
+
+      const lat = Number(parts[0]);
+      const lng = Number(parts[1]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return [lat, lng];
     }
 
-    function populateFilters() {
-      const categories = [...new Set(ALL_ROWS.map(r => r.Category))].filter(Boolean).sort();
-      const ordinances = [...new Set(ALL_ROWS.map(r => r.Ordinance))].filter(Boolean).sort();
-      const years = [...new Set(ALL_ROWS.map(r => r.Year_Built))].filter(Boolean).sort((a, b) => a - b);
-
-      const catEl = document.getElementById("filterCategory");
-      const ordEl = document.getElementById("filterOrdinance");
-      const yearEl = document.getElementById("filterYear");
-
-      categories.forEach(c => catEl.innerHTML += `<option value="${c}">${c}</option>`);
-      ordinances.forEach(o => ordEl.innerHTML += `<option value="${o}">${o}</option>`);
-      years.forEach(y => yearEl.innerHTML += `<option value="${y}">${y}</option>`);
+    function uniqSorted(arr){
+      return Array.from(new Set(arr.filter(Boolean))).sort((a,b) => String(a).localeCompare(String(b)));
     }
 
-    function renderMarkers(rows) {
-      markersLayer.clearLayers();
-      rows.forEach(row => {
-        const coords = parseCoords(row.Coordinate || row.coordinate);
-        if (coords) {
-          const marker = L.marker(coords).addTo(markersLayer);
-          marker.on('click', () => openCustomPopup(marker, row));
-        }
-      });
+    function toYearNumber(v){
+      const n = Number(String(v ?? "").trim());
+      return Number.isFinite(n) ? n : null;
     }
 
-    async function openCustomPopup(marker, row) {
-      const loadingContent = `<div style="padding:10px;"><strong>${row.Name}</strong><br>Loading...</div>`;
-      marker.bindPopup(loadingContent).openPopup();
+    function clearNode(node){
+      while(node.firstChild) node.removeChild(node.firstChild);
+    }
 
-      const folderName = row.Name.trim();
-      const { data: files, error } = await supabase.storage.from("data").list(folderName);
-      
-      if (error || !files || files.length === 0) {
-        marker.setPopupContent(`<div>Error: Folder "${folderName}" not found or inaccessible.</div>`);
-        return;
+    function makeResultItem(row){
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn ghost";
+      btn.style.justifyContent = "flex-start";
+      btn.style.width = "100%";
+      btn.style.whiteSpace = "normal";
+      btn.style.textAlign = "left";
+      btn.textContent = `${row.Name} — ${row.District || "Unknown district"}`;
+      btn.addEventListener("click", () => focusPlace(row));
+      return btn;
+    }
+
+    function updateResultsList(rows){
+      clearNode(elList);
+      rows.slice(0, 50).forEach(r => elList.appendChild(makeResultItem(r)));
+      if (rows.length > 50){
+        const note = document.createElement("p");
+        note.className = "small";
+        note.style.marginTop = "10px";
+        note.textContent = `Showing first 50 of ${rows.length} results. Use map zoom or filters to narrow.`;
+        elList.appendChild(note);
       }
+    }
 
-      let imagesHtml = "";
-      let detailsText = "Loading description...";
+    /************************************************************
+     * 7) STORAGE URL HELPERS (Public or Signed URLs)
+     ************************************************************/
+    
+    function encodePathSegment(seg){
+      // Encode one folder/file segment safely for URLs (keeps slashes as separators)
+      return encodeURIComponent(String(seg ?? "").trim());
+    }
 
-      // 1. Find details.txt
+    function buildStoragePath(folder, filename){
+      // Folder names come from DB "Name" values, which may contain spaces/special chars.
+      // Supabase storage paths should be URL-encoded per segment.
+      const parts = [folder, filename].filter(Boolean).map(encodePathSegment);
+      return parts.join("/");
+    }
+
+    function parseImageYears(value){
+      // Accept: "1990, 2000" or "1990;2000" or "1990|2000" or "1990\n2000"
+      // Returns a list of tokens (strings) that correspond to image base names.
+      if (!value) return [];
+      const raw = Array.isArray(value) ? value.join(",") : String(value);
+      return raw
+        .split(/[,;|\n\r]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+async function getFileUrl(path){
+      if (!USE_SIGNED_URLS){
+        const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+        return data?.publicUrl || null;
+      }
+      const { data, error } = await supabase.storage.from(BUCKET_NAME).createSignedUrl(path, SIGNED_URL_EXPIRES_IN);
+      if (error) throw error;
+      return data?.signedUrl || null;
+    }
+
+    async function loadFolderAssets(placeName, imageYears){
+      // Folder name equals place Name
+      const folder = placeName;
+
+      const { data: files, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .list(folder, { limit: 200, sortBy: { column: "name", order: "asc" } });
+
+      if (error) throw error;
+
       const detailsFile = files.find(f => f.name.toLowerCase() === "details.txt");
-      
-      // 2. Filter Images
       const imageFiles = files.filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
-      for (const img of imageFiles) {
-        const { data: imgUrl } = supabase.storage.from("data").getPublicUrl(`${folderName}/${img.name}`);
-        imagesHtml += `
-          <div class="popup-image-card">
-            <img src="${imgUrl.publicUrl}" onclick="window.open('${imgUrl.publicUrl}', '_blank')" style="cursor:zoom-in">
-            <span>${img.name}</span>
-          </div>`;
+      const yearTokens = parseImageYears(imageYears);
+      const filteredImages = yearTokens.length
+        ? imageFiles.filter(f => yearTokens.includes(f.name.replace(/\.[^.]+$/, "")))
+        : imageFiles;
+
+
+      const detailsUrl = detailsFile ? await getFileUrl(buildStoragePath(folder, detailsFile.name)) : null;
+
+      const imageUrls = [];
+      for (const img of filteredImages){
+        const url = await getFileUrl(buildStoragePath(folder, img.name));
+        if (url) imageUrls.push({ name: img.name, url });
       }
 
-      // Initial render with images while we wait for text fetch
-      const renderContent = (txt) => `
-        <div style="width:300px">
-          <h3 style="margin:0; color:var(--purple);">${row.Name}</h3>
-          <p style="font-size:11px; color:var(--muted)">${row.Category} | ${row.Year_Built}</p>
-          <div class="popup-details">${txt}</div>
-          <div class="popup-scroll-container">${imagesHtml || '<p style="font-size:11px;">No images found.</p>'}</div>
-        </div>`;
+      return { detailsUrl, imageUrls };
+    }
 
-      marker.setPopupContent(renderContent(detailsText));
+    async function fetchDetailsText(detailsUrl){
+      if (!detailsUrl) return "No details.txt found in this folder.";
+      const res = await fetch(detailsUrl);
+      if (!res.ok) return "Unable to load details.txt.";
+      return await res.text();
+    }
 
-      // 3. Perform the fetch for details.txt with a Cache Buster
-      if (detailsFile) {
-        const { data: textUrl } = supabase.storage.from("data").getPublicUrl(`${folderName}/${detailsFile.name}`);
-        try {
-          // Adding a timestamp prevents the browser from using a broken cached version
-          const response = await fetch(`${textUrl.publicUrl}?t=${new Date().getTime()}`);
-          if (response.ok) {
-            detailsText = await response.text();
-          } else {
-            detailsText = "Description file found, but could not be read (CORS or Permissions error).";
-          }
-        } catch(e) {
-          detailsText = "Error fetching details. Check your Supabase CORS settings.";
+    /************************************************************
+     * 8) MARKERS + CLICK BEHAVIOUR
+     ************************************************************/
+    function renderMarkers(rows){
+      markersLayer.clearLayers();
+
+      rows.forEach(row => {
+        const coord = parseCoordinate(row.Coordinate);
+        if (!coord) return;
+
+        const m = L.marker(coord);
+        m.on("click", () => focusPlace(row));
+        m.addTo(markersLayer);
+      });
+
+      const coords = rows.map(r => parseCoordinate(r.Coordinate)).filter(Boolean);
+      if (coords.length){
+        const bounds = L.latLngBounds(coords.map(c => L.latLng(c[0], c[1])));
+        map.fitBounds(bounds.pad(0.15));
+      }
+    }
+
+    async function focusPlace(row){
+      const coord = parseCoordinate(row.Coordinate);
+      if (coord) map.setView(coord, Math.max(map.getZoom(), 14));
+
+      panel.style.display = "block";
+      panelTitle.textContent = row.Name || "Untitled Place";
+
+      const metaParts = [
+        row.District ? `District: ${row.District}` : null,
+        row.Location ? `Location: ${row.Location}` : null,
+        row.Year_Built ? `Year Built: ${row.Year_Built}` : null,
+        row.Category ? `Category: ${row.Category}` : null,
+        row.Ordinance ? `Ordinance: ${row.Ordinance}` : null,
+      ].filter(Boolean);
+
+      panelMeta.textContent = metaParts.join(" | ");
+
+      panelDetails.textContent = "Loading details…";
+      clearNode(panelGallery);
+      panelGallery.style.opacity = "0.6";
+
+      try{
+        const { detailsUrl, imageUrls } = await loadFolderAssets(row.Name, row.Image_Years);
+
+        const detailsText = await fetchDetailsText(detailsUrl);
+        panelDetails.textContent = detailsText;
+
+        clearNode(panelGallery);
+        panelGallery.style.opacity = "1";
+
+        const sorted = imageUrls.slice().sort((a,b) => {
+          const ay = Number(a.name.replace(/\D/g,""));
+          const by = Number(b.name.replace(/\D/g,""));
+          if (Number.isFinite(ay) && Number.isFinite(by)) return ay - by;
+          return a.name.localeCompare(b.name);
+        });
+
+        if (!sorted.length){
+          const empty = document.createElement("p");
+          empty.className = "small";
+          empty.textContent = "No image files found in this folder.";
+          panelGallery.appendChild(empty);
+          return;
         }
-      } else {
-        detailsText = "No details.txt file found in this folder.";
+
+        for (const img of sorted){
+          const wrap = document.createElement("div");
+          wrap.style.border = "1px solid rgba(190,180,192,0.7)";
+          wrap.style.borderRadius = "12px";
+          wrap.style.overflow = "hidden";
+          wrap.style.background = "white";
+
+          const image = document.createElement("img");
+          image.src = img.url;
+          image.alt = img.name;
+          image.loading = "lazy";
+          image.style.width = "100%";
+          image.style.height = "140px";
+          image.style.objectFit = "cover";
+          image.style.display = "block";
+
+          const cap = document.createElement("div");
+          cap.style.padding = "8px 10px";
+          cap.style.fontSize = "12px";
+          cap.style.fontWeight = "900";
+          cap.style.color = "#3b3b3b";
+          cap.textContent = img.name; // corresponds to Image Years
+
+          wrap.appendChild(image);
+          wrap.appendChild(cap);
+          panelGallery.appendChild(wrap);
+        }
+      } catch (e){
+        panelDetails.textContent = "Error loading folder assets. Check bucket policies and folder names.";
+        clearNode(panelGallery);
+        const p = document.createElement("p");
+        p.className = "small";
+        p.textContent = String(e?.message || e);
+        panelGallery.appendChild(p);
       }
-
-      // Final update to the popup content
-      marker.setPopupContent(renderContent(detailsText));
     }
 
-    function parseCoords(str) {
-      if (!str) return null;
-      // Removes brackets if they exist and splits by comma
-      const clean = str.replace(/[\[\]]/g, '');
-      const parts = clean.split(',').map(Number);
-      return (parts.length === 2 && !isNaN(parts[0])) ? parts : null;
-    }
+    /************************************************************
+     * 9) FILTERING
+     ************************************************************/
+    function applyFilters(){
+      const category = elCategory.value.trim();
+      const ordinance = elOrdinance.value.trim();
+      const minY = toYearNumber(elYearMin.value);
+      const maxY = toYearNumber(elYearMax.value);
 
-    function applyFilters() {
-      const cat = document.getElementById("filterCategory").value;
-      const ord = document.getElementById("filterOrdinance").value;
-      const yr = document.getElementById("filterYear").value;
+      FILTERED_ROWS = ALL_ROWS.filter(r => {
+        if (category && String(r.Category || "") !== category) return false;
+        if (ordinance && String(r.Ordinance || "") !== ordinance) return false;
 
-      const filtered = ALL_ROWS.filter(r => {
-        if (cat && r.Category !== cat) return false;
-        if (ord && r.Ordinance !== ord) return false;
-        if (yr && String(r.Year_Built) !== yr) return false;
+        const y = toYearNumber(r.Year_Built);
+        if (minY != null && (y == null || y < minY)) return false;
+        if (maxY != null && (y == null || y > maxY)) return false;
+
         return true;
       });
 
-      renderMarkers(filtered);
-      updateResultsList(filtered);
-      document.getElementById("resultCount").textContent = `${filtered.length} places found`;
-    }
-    async function openCustomPopup(marker, row) {
-      const folderName = row.Name.trim();
-      console.log("Attempting to load folder:", folderName); // This will show in F12 console
-      // ... rest of your code
-    }
-    function updateResultsList(rows) {
-      const list = document.getElementById("resultsList");
-      list.innerHTML = "";
-      rows.forEach(r => {
-        const btn = document.createElement("button");
-        btn.className = "btn ghost";
-        btn.style.textAlign = "left";
-        btn.style.display = "block";
-        btn.style.width = "100%";
-        btn.innerHTML = `
-          <div style="font-weight:bold; font-size:13px; color:var(--purple);">${r.Name}</div>
-          <div style="font-size:11px; color:var(--muted);">${r.Category}</div>
-        `;
-        btn.onclick = () => {
-          const coords = parseCoords(r.Coordinate || r.coordinate);
-          if (coords) {
-            map.flyTo(coords, 17);
-            // Search for the specific marker to trigger the popup
-            markersLayer.eachLayer(m => {
-              const latLng = m.getLatLng();
-              if (Math.abs(latLng.lat - coords[0]) < 0.0001 && Math.abs(latLng.lng - coords[1]) < 0.0001) {
-                openCustomPopup(m, r);
-              }
-            });
-          }
-        };
-        list.appendChild(btn);
-      });
+      elCount.textContent = `${FILTERED_ROWS.length} place(s) found`;
+      updateResultsList(FILTERED_ROWS);
+      renderMarkers(FILTERED_ROWS);
     }
 
-    // Event Listeners
-    document.getElementById("applyFilters").onclick = applyFilters;
-    document.getElementById("resetFilters").onclick = () => {
-      document.querySelectorAll('select').forEach(s => s.value = "");
+    function resetFilters(){
+      elCategory.value = "";
+      elOrdinance.value = "";
+      elYearMin.value = "";
+      elYearMax.value = "";
       applyFilters();
-    };
+    }
 
-    // Start
-    init();
+    elApply.addEventListener("click", applyFilters);
+    elReset.addEventListener("click", resetFilters);
+
+    /************************************************************
+     * 10) LOAD DATA FROM SUPABASE TABLE
+     ************************************************************/
+    async function initPlaces(){
+      const debugBox = document.getElementById("debugBox");
+      const showDebug = (msg) => {
+        if (!debugBox) return;
+        debugBox.style.display = "block";
+        debugBox.textContent = msg;
+      };
+
+      elCount.textContent = "Loading…";
+      showDebug("");
+
+      // ✅ IMPORTANT:
+      // If your DB columns have spaces, Supabase JS can still fetch them,
+      // BUT they MUST be quoted properly in select() OR you must use exact DB column names.
+
+      // Option A (recommended): select ALL columns first to confirm table access,
+      // then we map fields safely.
+      let data, error;
+
+      ({ data, error } = await supabase
+        .from(TABLE_NAME)
+        .select("*")
+        .limit(2000)
+      );
+
+      if (error) {
+        elCount.textContent = "Failed to load.";
+        showDebug(
+          "Supabase error:\n" +
+          JSON.stringify({
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          }, null, 2)
+        );
+        return;
+      }
+
+      if (!data || !data.length) {
+        elCount.textContent = "No rows returned.";
+        showDebug("Query succeeded, but table returned 0 rows.");
+        ALL_ROWS = [];
+        FILTERED_ROWS = [];
+        updateResultsList([]);
+        renderMarkers([]);
+        return;
+      }
+
+      // Show first row keys so we can confirm actual column names
+      showDebug(
+        "Query succeeded.\nFirst row keys detected:\n" +
+        Object.keys(data[0]).join(", ")
+      );
+
+      // ✅ Normalize keys:
+      // Support either "Year Built" OR "Year_Built" OR "year_built"
+      const getVal = (row, candidates) => {
+        for (const k of candidates) {
+          if (row[k] !== undefined) return row[k];
+        }
+        return null;
+      };
+
+      ALL_ROWS = data.map(r => ({
+        Name: getVal(r, ["Name", "name"]),
+        District: getVal(r, ["District", "district"]),
+        Location: getVal(r, ["Location", "location"]),
+        Year_Built: getVal(r, ["Year_Built", "Year Built", "year_built", "yearBuilt"]),
+        Coordinate: getVal(r, ["Coordinate", "coordinate", "coords", "latlng"]),
+        Category: getVal(r, ["Category", "category"]),
+        Ordinance: getVal(r, ["Ordinance", "ordinance"]),
+        Image_Years: getVal(r, ["Image_Years", "Image Years", "image_years", "imageYears"]),
+      })).filter(x => x.Name);
+
+      // Populate filters from normalized data
+      const categories = uniqSorted(ALL_ROWS.map(r => r.Category));
+      const ordinances = uniqSorted(ALL_ROWS.map(r => r.Ordinance));
+
+      // Clear old options (keep "All")
+      elCategory.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
+      elOrdinance.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
+
+      for (const c of categories){
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        elCategory.appendChild(opt);
+      }
+      for (const o of ordinances){
+        const opt = document.createElement("option");
+        opt.value = o;
+        opt.textContent = o;
+        elOrdinance.appendChild(opt);
+      }
+
+      FILTERED_ROWS = ALL_ROWS;
+      elCount.textContent = `${ALL_ROWS.length} place(s) loaded`;
+      updateResultsList(ALL_ROWS);
+      renderMarkers(ALL_ROWS);
+    }
+
+    // Kick things off
+    initPlaces();
+
   </script>
 </body>
 </html>
