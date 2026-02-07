@@ -922,7 +922,7 @@
     function buildStoragePath(folder, filename){
       // Folder names come from DB "Name" values, which may contain spaces/special chars.
       // Supabase storage paths should be URL-encoded per segment.
-      const parts = [folder, filename].filter(Boolean).map(encodePathSegment);
+      const parts = Array.from(arguments).filter(Boolean).map(encodePathSegment);
       return parts.join("/");
     }
 
@@ -950,37 +950,126 @@ async function getFileUrl(path){
     async function loadFolderAssets(placeName, imageYears){
       // Folder name equals place Name
       const folder = placeName;
-
+      // List files in the main folder
       const { data: files, error } = await supabase.storage
         .from(BUCKET_NAME)
         .list(folder, { limit: 200, sortBy: { column: "name", order: "asc" } });
 
       if (error) throw error;
 
-      const detailsFile = files.find(f => f.name.toLowerCase() === "details.txt");
-      const imageFiles = files.filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
+      // Also check for a common subfolder where images might be stored (e.g., 'pictures' or 'images')
+      let subFiles = [];
+      for (const sub of ["pictures", "images"]) {
+        try {
+          const { data: sdata, error: serror } = await supabase.storage.from(BUCKET_NAME).list(`${folder}/${sub}`, { limit: 500, sortBy: { column: "name", order: "asc" } });
+          if (!serror && Array.isArray(sdata) && sdata.length) {
+            // When listing a subfolder, returned names are the file names within that subfolder
+            // Normalize by prefixing with sub so we can later build correct paths
+            subFiles = subFiles.concat(sdata.map(f => ({ ...f, __subpath: sub })));
+            break; // prefer first match
+          }
+        } catch (e) {
+          // ignore and continue
+        }
+      }
+
+      const combinedFiles = (files || []).concat(subFiles || []);
+
+      const detailsFile = (files || []).find(f => f.name.toLowerCase() === "details.txt");
+      const imageFiles = combinedFiles.filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
       const yearTokens = parseImageYears(imageYears);
       const filteredImages = yearTokens.length
         ? imageFiles.filter(f => yearTokens.includes(f.name.replace(/\.[^.]+$/, "")))
         : imageFiles;
 
 
-      const detailsUrl = detailsFile ? await getFileUrl(buildStoragePath(folder, detailsFile.name)) : null;
+      const detailsPath = detailsFile ? buildStoragePath(folder, detailsFile.name) : null;
+      const detailsUrl = detailsPath ? await getFileUrl(detailsPath) : null;
 
       const imageUrls = [];
       for (const img of filteredImages){
-        const url = await getFileUrl(buildStoragePath(folder, img.name));
+        const url = await getFileUrl(buildStoragePath(folder, img.__subpath, img.name));
         if (url) imageUrls.push({ name: img.name, url });
       }
 
-      return { detailsUrl, imageUrls };
+      return { detailsPath, detailsUrl, imageUrls };
     }
 
-    async function fetchDetailsText(detailsUrl){
-      if (!detailsUrl) return "No details.txt found in this folder.";
-      const res = await fetch(detailsUrl);
-      if (!res.ok) return "Unable to load details.txt.";
-      return await res.text();
+    // Simple in-memory cache for first-image lookups to avoid repeated list calls
+    const IMAGE_CACHE = new Map();
+
+    async function getFirstImageForFolder(folder){
+      if (!folder) return null;
+      if (IMAGE_CACHE.has(folder)) return IMAGE_CACHE.get(folder);
+      try {
+        // Try listing main folder
+        let { data: files, error } = await supabase.storage.from(BUCKET_NAME).list(folder, { limit: 200, sortBy: { column: "name", order: "asc" } });
+        if (!error && Array.isArray(files)){
+          const imageFile = files.find(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
+          if (imageFile) {
+            const path = buildStoragePath(folder, imageFile.name);
+            const url = await getFileUrl(path);
+            const result = url ? { name: imageFile.name, url } : null;
+            IMAGE_CACHE.set(folder, result);
+            return result;
+          }
+        }
+
+        // Try common subfolders
+        for (const sub of ["pictures", "images"]) {
+          try {
+            const { data: sfiles, error: serror } = await supabase.storage.from(BUCKET_NAME).list(`${folder}/${sub}`, { limit: 500, sortBy: { column: "name", order: "asc" } });
+            if (!serror && Array.isArray(sfiles) && sfiles.length){
+              const imageFile = sfiles.find(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
+              if (imageFile){
+                const path = buildStoragePath(folder, sub, imageFile.name);
+                const url = await getFileUrl(path);
+                const result = url ? { name: imageFile.name, url } : null;
+                IMAGE_CACHE.set(folder, result);
+                return result;
+              }
+            }
+          } catch(e) {
+            // continue
+          }
+        }
+
+        IMAGE_CACHE.set(folder, null);
+        return null;
+      } catch (e) {
+        IMAGE_CACHE.set(folder, null);
+        return null;
+      }
+    }
+
+    async function fetchDetailsText(detailsPath, detailsUrl){
+      if (!detailsPath && !detailsUrl) return "No details.txt found in this folder.";
+
+      // Prefer using Supabase download() which works reliably with CORS.
+      if (detailsPath) {
+        try {
+          const { data, error } = await supabase.storage.from(BUCKET_NAME).download(detailsPath);
+          if (!error && data) {
+            const text = await data.text();
+            return text;
+          }
+        } catch (e) {
+          // fall through to fetch fallback
+        }
+      }
+
+      // Fallback: fetch the public/signed URL if available
+      if (detailsUrl) {
+        try {
+          const res = await fetch(detailsUrl);
+          if (!res.ok) return "Unable to load details.txt.";
+          return await res.text();
+        } catch (e) {
+          return "Unable to load details.txt.";
+        }
+      }
+
+      return "Unable to load details.txt.";
     }
 
     /************************************************************
@@ -994,6 +1083,31 @@ async function getFileUrl(path){
         if (!coord) return;
 
         const m = L.marker(coord);
+        // Bind a lightweight popup that will load a thumbnail on open
+        m.bindPopup(`<div style="min-width:160px;min-height:80px;font-size:13px">Loading…<br/><b>${row.Name || 'Place'}</b></div>`);
+
+        m.on("popupopen", async () => {
+          try {
+            const popup = m.getPopup();
+            const cached = IMAGE_CACHE.get(row.Name);
+            if (cached !== undefined) {
+              if (cached) popup.setContent(`<div style="width:160px"><img src="${cached.url}" style="width:160px;height:100px;object-fit:cover;display:block;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"/><div style="font-weight:900;margin-top:6px">${row.Name}</div><div style="font-size:12px">Click marker to open details.</div></div>`);
+              else popup.setContent(`<div style="font-size:13px">No images found</div>`);
+              return;
+            }
+
+            popup.setContent('Loading image...');
+            const first = await getFirstImageForFolder(row.Name);
+            if (first) {
+              popup.setContent(`<div style="width:160px"><img src="${first.url}" style="width:160px;height:100px;object-fit:cover;display:block;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"/><div style="font-weight:900;margin-top:6px">${row.Name}</div><div style="font-size:12px">Click marker to open details.</div></div>`);
+            } else {
+              popup.setContent(`<div style="font-size:13px">No images found</div>`);
+            }
+          } catch (e) {
+            try { m.getPopup().setContent(`<div style="font-size:13px">Error loading image</div>`); } catch(e){}
+          }
+        });
+
         m.on("click", () => focusPlace(row));
         m.addTo(markersLayer);
       });
@@ -1027,9 +1141,9 @@ async function getFileUrl(path){
       panelGallery.style.opacity = "0.6";
 
       try{
-        const { detailsUrl, imageUrls } = await loadFolderAssets(row.Name, row.Image_Years);
+        const { detailsPath, detailsUrl, imageUrls } = await loadFolderAssets(row.Name, row.Image_Years);
 
-        const detailsText = await fetchDetailsText(detailsUrl);
+        const detailsText = await fetchDetailsText(detailsPath, detailsUrl);
         panelDetails.textContent = detailsText;
 
         clearNode(panelGallery);
