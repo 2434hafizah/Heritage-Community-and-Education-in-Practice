@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Heritage, Community and Education in Practice</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root{
+      --purple:#2B0970;
+      --purple2:#362A7C;
+      --parchment:#F1E6DA;
+      --card:#FBF7F6;
+      --card2:#F9F3F0;
+      --border:#BEB4C0;
+      --gold:#A58B6E;
+      --text:#2b2b2b;
+      --muted:#5b5b5b;
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 18px;
+      --radius2: 14px;
+      --max: 1120px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    html{ scroll-behavior:smooth; }
+
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--parchment);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      box-shadow: inset 0 0 0 18px rgba(0,0,0,0.03);
+      z-index: 0;
+    }
+
+    a{ color: var(--purple2); text-decoration:none; }
+    a:hover{ text-decoration: underline; }
+
+    .container{
+      width: min(var(--max), calc(100% - 48px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(251,247,246,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(190,180,192,0.5);
+    }
+
+    .navbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 16px 0;
+      gap: 16px;
+      position: relative;
+    }
+
+    .brand{
+      font-weight: 900;
+      color: var(--purple);
+      letter-spacing: 0.2px;
+      font-size: 15px;
+    }
+
+    .menuBtn{
+      display:none;
+      border:1px solid rgba(190,180,192,0.7);
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 900;
+      color: var(--purple);
+      cursor:pointer;
+    }
+
+    .nav{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a{
+      color:#3d3d3d;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
+    }
+
+    .nav a.active{
+      color: var(--purple);
+      background: rgba(43,9,112,0.06);
+      position: relative;
+    }
+    .nav a.active::after{
+      content:"";
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:3px;
+      height:3px;
+      border-radius: 999px;
+      background: var(--purple);
+    }
+
+    @media (max-width: 860px){
+      .menuBtn{ display:block; }
+      .nav{
+        display:none;
+        position:absolute;
+        right: 0;
+        top: 56px;
+        background: var(--card);
+        border: 1px solid rgba(190,180,192,0.8);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 10px;
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 230px;
+      }
+      .nav.open{ display:flex; }
+      .nav a{ padding: 10px 12px; }
+    }
+
+    /* Sections */
+    section{ scroll-margin-top: 92px; }
+    .section{ padding: 34px 0; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(190,180,192,0.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .h1{
+      font-size: 34px;
+      margin: 0 0 10px 0;
+      color: var(--purple);
+      letter-spacing: 0.2px;
+    }
+
+    .lead{
+      color: #333;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(190,180,192,0.55);
+      margin: 22px 0;
+    }
+
+    .hero{ padding: 26px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(190,180,192,0.7);
+      background: var(--card2);
+      color: var(--purple2);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .heroActions{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 14px 16px;
+      border-radius: var(--radius2);
+      border: none;
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 14px;
+      transition: transform .08s ease, filter .2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn.primary{
+      background: var(--gold);
+      color: white;
+    }
+    .btn.primary:hover{
+      filter: brightness(0.95);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .btn.ghost{
+      background: white;
+      color: var(--purple);
+      border: 1px solid rgba(190,180,192,0.8);
+    }
+    .btn.ghost:hover{
+      filter: brightness(0.98);
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .grid4{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 1000px){
+      .grid4{ grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px){
+      .grid4{ grid-template-columns: 1fr; }
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px){
+      .grid2{ grid-template-columns: 1fr; }
+    }
+
+    .outputCard{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .iconBadge{
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: var(--purple);
+      display:inline-block;
+    }
+
+    .h3{
+      margin: 0;
+      font-size: 16px;
+      color: var(--purple);
+    }
+
+    .desc{
+      margin: 0;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .noteBox{ padding: 16px 18px; }
+
+    .footer{
+      margin-top: 30px;
+      padding: 18px 0;
+      background: rgba(251,247,246,0.9);
+      border-top: 1px solid rgba(190,180,192,0.5);
+      color: #555;
+      font-size: 12px;
+    }
+
+    /* Contact form */
+    .formWrap{ padding: 22px; }
+    .formRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 860px){
+      .formRow{ grid-template-columns: 1fr; }
+    }
+    label{
+      font-size: 12px;
+      color: #555;
+      font-weight: 900;
+      display:block;
+      margin-bottom: 8px;
+    }
+    input, select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(190,180,192,0.9);
+      background: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 140px; resize: vertical; }
+    .checkRow{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      margin: 14px 0 10px 0;
+    }
+    .checkRow input{ width:auto; margin-top:3px; }
+
+    /* Back to top */
+    .backToTop{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display:none;
+      z-index: 20;
+      border-radius: 999px;
+      padding: 12px 14px;
+      border: 1px solid rgba(190,180,192,0.85);
+      background: rgba(251,247,246,0.95);
+      color: var(--purple);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .backToTop:hover{ transform: translateY(-1px); }
+
+    /* Places layout tweak */
+    @media (max-width: 980px){
+      .placesGrid{
+        grid-template-columns: 1fr !important;
+      }
+      #map{ height: 420px !important; }
+    }
+
+    /* Scrollable Results Styling */
+    #resultsList::-webkit-scrollbar {
+      width: 6px;
+    }
+    #resultsList::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.03);
+    }
+    #resultsList::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    const LINKS = {
+      manual: "https://drive.google.com/file/d/1GYaG3UaH8Opi4ml9tHkiGVVZanJlFY2u/view?usp=drive_link",
+      flipbook: "https://heyzine.com/flip-book/e057c72753.html",
+      repository: "https://2434hafizah.github.io/Heritage-Community-and-Education-in-Practice/",
+      article: "https://docs.google.com/document/d/1bBcN7k_N4VgX-tA8M0l8J67-KFoKWadJ/edit?usp=drive_link&ouid=107881167726786119191&rtpof=true&sd=true"
+    };
+  </script>
+
+  <header class="header">
+    <div class="container navbar">
+      <div class="brand">Heritage, Community and Education in Practice</div>
+      <button class="menuBtn" type="button" aria-label="Open menu">Menu</button>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#home" class="navLink active">Home</a>
+        <a href="#overview" class="navLink">Overview</a>
+        <a href="#places" class="navLink">Historic Places</a>
+        <a href="#outputs" class="navLink">Outputs</a>
+        <a href="#contact" class="navLink">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="home" class="section">
+      <div class="card hero">
+        <h1 class="h1">Heritage, Community and Education in Practice</h1>
+        <p class="lead">A documentation repository for academic–community engagement in Kuching, Sarawak.</p>
+
+        <div style="margin-top:14px;">
+          <span class="pill">Prepare → Implement → Monitor → Review</span>
+        </div>
+
+        <div class="heroActions">
+          <a class="btn primary" href="#outputs">Explore Outputs</a>
+          <a class="btn ghost" href="#places">View Historic Places</a>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="small">
+          This website consolidates engagement evidence, learning outputs, and public reference materials produced through
+          heritage-related academic–community work in Kuching. It supports ethical documentation, clear learning claims,
+          and continuity planning across repeated engagement cycles.
+        </p>
+      </div>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="card noteBox">
+          <h2 class="h3" style="font-size:18px;">Quick Links</h2>
+          <div class="divider"></div>
+
+          <div class="heroActions">
+            <a class="btn primary" target="_blank" rel="noopener" id="btnManual">Manual Book (PDF)</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnFlipbook">Flipbook</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnRepo">Website Repository</a>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnArticle">Academic Article</a>
+          </div>
+
+          <p class="small" style="margin-top:14px;">
+            Manual book is registered. Website repository is under continuous improvement. Academic article is submitted.
+          </p>
+        </div>
+      </div>
+
+      <div class="section" style="padding-top:0;">
+        <h2 class="h3" style="font-size:20px; margin-bottom:12px;">Key Outputs</h2>
+
+        <div class="grid4">
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Manual Book</h3>
+            <p class="desc">Registered handbook with tools and templates.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkManualSmall">Open PDF</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Flipbook</h3>
+            <p class="desc">Online flipbook of evidence and reflections.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkFlipbookSmall">Open Online</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Website Repository</h3>
+            <p class="desc">Under continuous improvement (public repository).</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkRepoSmall">Open Site</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Academic Article</h3>
+            <p class="desc">Submitted academic writing output.</p>
+            <a class="small" target="_blank" rel="noopener" id="lnkArticleSmall">Open Doc</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview" class="section">
+      <h1 class="h1">Overview</h1>
+      <p class="lead">
+        A documentation-oriented platform that records how heritage-based academic–community engagement is planned,
+        implemented, monitored, and improved.
+      </p>
+      <p class="small" style="margin-top:10px;">
+        Designed for educational reference, evidence discipline, and continuity planning.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2">
+          <div class="card noteBox">
+            <h2 class="h3" style="font-size:18px;">Project Snapshot</h2>
+            <div class="divider"></div>
+            <p class="desc"><b>Location:</b> Kuching, Sarawak</p>
+            <p class="desc"><b>Focus:</b> Heritage learning, documentation, and continuity planning</p>
+            <p class="desc"><b>Approach:</b> Evidence-based practice with ethical safeguards</p>
+          </div>
+
+          <div class="card noteBox">
+            <h2 class="h3" style="font-size:18px;">What You Can Do Here</h2>
+            <div class="divider"></div>
+            <p class="desc">• Browse historic places directly in this website (map + filters + place panel)</p>
+            <p class="desc">• Access outputs: manual, flipbook, repository website, academic article</p>
+            <p class="desc">• Use as reference for teaching, learning, and engagement continuity</p>
+          </div>
+        </div>
+
+        <div class="card noteBox" style="margin-top:16px;">
+          <h2 class="h3" style="font-size:18px;">Managed Workflow Cycle</h2>
+          <div class="divider"></div>
+          <div class="heroActions">
+            <span class="pill">Prepare</span>
+            <span class="pill">Implement</span>
+            <span class="pill">Monitor</span>
+            <span class="pill">Review</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="places" class="section">
+      <h1 class="h1">Historic Places</h1>
+      <p class="lead">
+        Browse heritage places directly here. Click a point to view details and images.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2 placesGrid" style="grid-template-columns: 360px 1fr;">
+          <div class="card noteBox" style="height: fit-content;">
+            <h2 class="h3" style="font-size:18px;">Filter</h2>
+            <p class="small" style="margin-top:6px;">
+              Filter locations by Category, Ordinance, and Year Built.
+            </p>
+
+            <div class="divider"></div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label for="filterCategory">Category</label>
+                <select id="filterCategory">
+                  <option value="">All</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="filterOrdinance">Ordinance</label>
+                <select id="filterOrdinance">
+                  <option value="">All</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="filterYear">Year Built</label>
+                <select id="filterYear">
+                  <option value="">All</option>
+                </select>
+              </div>
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn primary" id="applyFilters" type="button">Apply</button>
+                <button class="btn ghost" id="resetFilters" type="button">Reset</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <div>
+                <h3 class="h3" style="font-size:14px;">Results</h3>
+                <div id="resultsList" style="margin-top:10px; display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                  <p class="small">Loading places...</p>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+              <p class="small">
+                Tip: Click a place name or map point for details.
+              </p>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card" style="overflow:hidden;">
+              <div id="map" style="height: 520px; width: 100%;"></div>
+            </div>
+
+            <div class="card noteBox" id="placePanel" style="display:none;">
+              <h2 class="h3" id="panelTitle" style="font-size:20px;">Place</h2>
+              <p class="small" id="panelMeta" style="margin-top:6px;"></p>
+              <div class="divider"></div>
+
+              <div id="panelDetails" class="desc" style="white-space:pre-wrap;"></div>
+
+              <div class="divider"></div>
+
+              <h3 class="h3" style="font-size:16px;">Images</h3>
+              <p class="small" style="margin-top:6px;">
+                Images load from the Supabase bucket folder named exactly the same as the place <b>Name</b>.
+              </p>
+
+              <div id="panelGallery" style="margin-top:12px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="outputs" class="section">
+      <h1 class="h1">Outputs</h1>
+      <p class="lead">Access the core deliverables produced for documentation, learning, and continuity planning.</p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="grid2">
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Manual Book (Registered)</h3>
+            <p class="desc">Training handbook with step-by-step workflow guidance, tools, and copy-ready templates.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnManual2">Open Manual (PDF)</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Flipbook (Online)</h3>
+            <p class="desc">Photos, activity evidence, permissions, outputs, and reflections.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnFlipbook2">Open Flipbook</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Website Repository (Under Continuous Improvement)</h3>
+            <p class="desc">Public reference website for learning access and documentation repository.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnRepo2">Open Website Repository</a>
+          </div>
+
+          <div class="card outputCard">
+            <span class="iconBadge"></span>
+            <h3 class="h3">Academic Article (Submitted)</h3>
+            <p class="desc">Google Doc version of the submitted academic article.</p>
+            <a class="btn primary" target="_blank" rel="noopener" id="btnArticle2">Open Academic Article</a>
+          </div>
+        </div>
+
+        <div class="card noteBox" style="margin-top:16px;">
+          <h2 class="h3" style="font-size:16px;">Reference note</h2>
+          <p class="small" style="margin-top:8px;">
+            All materials are shared for educational and academic reference. Please use responsibly and cite appropriately.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <h1 class="h1">Contact</h1>
+      <p class="lead">For collaboration, feedback, or enquiries, please use the form below.</p>
+      <p class="desc" style="margin-top:8px;">
+        This site is a reference repository. Messages are welcomed for clarification, academic use, or future engagement.
+      </p>
+
+      <div class="section" style="padding-top:16px;">
+        <div class="card formWrap">
+          <form id="contactForm">
+            <div class="formRow">
+              <div>
+                <label for="name">Full Name</label>
+                <input id="name" name="name" type="text" placeholder="Your name" required/>
+              </div>
+              <div>
+                <label for="email">Email Address</label>
+                <input id="email" name="email" type="email" placeholder="you@email.com" required/>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <label for="purpose">Purpose of Enquiry</label>
+              <select id="purpose" name="purpose" required>
+                <option value="" selected disabled>Select a purpose</option>
+                <option>Collaboration</option>
+                <option>Feedback</option>
+                <option>Academic reference / citation</option>
+                <option>Community engagement enquiry</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div style="margin-top:14px;">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Write your message…" required></textarea>
+            </div>
+
+            <div class="checkRow">
+              <input id="consent" type="checkbox"/>
+              <div class="small">I understand my information will be used only to respond to this enquiry.</div>
+            </div>
+
+            <button class="btn primary" type="submit">Send Message</button>
+
+            <p class="small" style="margin-top:14px;">
+              Privacy Note: Personal information is used solely for communication purposes and is not shared with third parties.
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">Heritage, Community and Education in Practice | Kuching, Sarawak</div>
+  </footer>
+
+  <button id="backToTop" class="backToTop" type="button" aria-label="Back to top">↑</button>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    /************************************************************
+     * 1) SUPABASE CONFIG
+     ************************************************************/
+    const SUPABASE_URL = "https://zodscjmvgpadtywcwqjc.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_ShaAaToR0VDOgN-T6vqTig_tOsD0aWJ";
+    const BUCKET_NAME = "data";
+    const TABLE_NAME  = "database";
+
+    const USE_SIGNED_URLS = false;
+    const SIGNED_URL_EXPIRES_IN = 60 * 30;
+
+    /************************************************************
+     * 2) QUICK LINKS
+     ************************************************************/
+    const setHref = (id, href) => {
+      const el = document.getElementById(id);
+      if (el) el.href = href;
+    };
+
+    setHref("btnManual", LINKS.manual);
+    setHref("btnFlipbook", LINKS.flipbook);
+    setHref("btnRepo", LINKS.repository);
+    setHref("btnArticle", LINKS.article);
+
+    setHref("btnManual2", LINKS.manual);
+    setHref("btnFlipbook2", LINKS.flipbook);
+    setHref("btnRepo2", LINKS.repository);
+    setHref("btnArticle2", LINKS.article);
+
+    setHref("lnkManualSmall", LINKS.manual);
+    setHref("lnkFlipbookSmall", LINKS.flipbook);
+    setHref("lnkRepoSmall", LINKS.repository);
+    setHref("lnkArticleSmall", LINKS.article);
+
+    /************************************************************
+     * 3) NAV + BACK TO TOP + CONTACT FORM
+     ************************************************************/
+    const menuBtn = document.querySelector(".menuBtn");
+    const nav = document.querySelector(".nav");
+    if (menuBtn && nav) {
+      menuBtn.addEventListener("click", () => nav.classList.toggle("open"));
+    }
+    document.querySelectorAll(".nav a").forEach(a => {
+      a.addEventListener("click", () => nav.classList.remove("open"));
+    });
+
+    const navLinks = Array.from(document.querySelectorAll(".navLink"));
+    const sections = navLinks.map(a => document.querySelector(a.getAttribute("href")));
+    const setActive = () => {
+      const y = window.scrollY + 120;
+      let current = sections[0];
+      for (const s of sections){
+        if (s && s.offsetTop <= y) current = s;
+      }
+      navLinks.forEach(a => a.classList.remove("active"));
+      const activeLink = navLinks.find(a => a.getAttribute("href") === "#" + current.id);
+      if (activeLink) activeLink.classList.add("active");
+    };
+    window.addEventListener("scroll", setActive);
+    window.addEventListener("load", setActive);
+
+    const backToTop = document.getElementById("backToTop");
+    window.addEventListener("scroll", () => {
+      backToTop.style.display = window.scrollY > 500 ? "inline-flex" : "none";
+    });
+    backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+    const contactForm = document.getElementById("contactForm");
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const consent = document.getElementById("consent");
+      if (!consent.checked) {
+        alert("Please tick the consent checkbox before sending.");
+        return;
+      }
+      alert("Message prepared. (This site does not send messages automatically.)");
+      contactForm.reset();
+    });
+
+    /************************************************************
+     * 4) SUPABASE CLIENT
+     ************************************************************/
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /************************************************************
+     * 5) MAP + UI REFERENCES
+     ************************************************************/
+    const elCategory = document.getElementById("filterCategory");
+    const elOrdinance = document.getElementById("filterOrdinance");
+    const elYear = document.getElementById("filterYear");
+    const elApply = document.getElementById("applyFilters");
+    const elReset = document.getElementById("resetFilters");
+    const elList = document.getElementById("resultsList");
+
+    const panel = document.getElementById("placePanel");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelMeta = document.getElementById("panelMeta");
+    const panelDetails = document.getElementById("panelDetails");
+    const panelGallery = document.getElementById("panelGallery");
+
+    let ALL_ROWS = [];
+    let FILTERED_ROWS = [];
+
+    const map = L.map("map", { zoomControl: true }).setView([1.5533, 110.3592], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    /************************************************************
+     * 6) HELPERS & CORE LOGIC
+     ************************************************************/
+    function getCleanPath(folder, file) { return folder ? `${folder}/${file}` : file; }
+
+    async function getFileUrl(path) {
+      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+      return data?.publicUrl || null;
+    }
+
+    async function loadFolderAssets(row) {
+      const { data: files, error } = await supabase.storage.from(BUCKET_NAME).list(row.Name);
+      if (error) throw error;
+
+      const dFile = files.find(f => f.name.toLowerCase() === "details.txt");
+      let detailsText = "No details found.";
+      if (dFile) {
+        const { data: blob } = await supabase.storage.from(BUCKET_NAME).download(getCleanPath(row.Name, dFile.name));
+        detailsText = await blob.text();
+      }
+
+      const images = files.filter(f => /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name));
+      const imageUrls = [];
+      for (const img of images) {
+        const url = await getFileUrl(getCleanPath(row.Name, img.name));
+        if (url) imageUrls.push({ name: img.name, url });
+      }
+
+      return { detailsText, imageUrls };
+    }
+
+    async function focusPlace(row) {
+      const coord = row.Coordinate ? row.Coordinate.split(',').map(Number) : null;
+      if (coord) map.setView(coord, 15);
+
+      panel.style.display = "block";
+      panelTitle.textContent = row.Name;
+      panelMeta.textContent = `${row.District || 'N/A'} | ${row.Year_Built || 'N/A'} | ${row.Category || 'N/A'}`;
+      panelDetails.textContent = "Loading...";
+      panelGallery.innerHTML = "";
+
+      try {
+        const { detailsText, imageUrls } = await loadFolderAssets(row);
+        panelDetails.textContent = detailsText;
+
+        if (imageUrls.length === 0) {
+          panelGallery.innerHTML = "<p class='small'>No images found.</p>";
+        } else {
+          imageUrls.forEach(img => {
+            const wrap = document.createElement("div");
+            wrap.innerHTML = `
+              <img src="${img.url}" style="width:100%; height:140px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+              <div class="small" style="padding:4px 0; text-align:center;">${img.name}</div>
+            `;
+            panelGallery.appendChild(wrap);
+          });
+        }
+      } catch (e) { panelDetails.textContent = "Error loading content."; }
+    }
+
+    /************************************************************
+     * 7) FILTERING LOGIC
+     ************************************************************/
+    function applyFilters() {
+      const cat = elCategory.value;
+      const ord = elOrdinance.value;
+      const year = elYear.value;
+
+      FILTERED_ROWS = ALL_ROWS.filter(r => {
+        const matchCat = !cat || r.Category === cat;
+        const matchOrd = !ord || r.Ordinance === ord;
+        const matchYear = !year || String(r.Year_Built) === year;
+        return matchCat && matchOrd && matchYear;
+      });
+
+      renderUI();
+    }
+
+    function renderUI() {
+      markersLayer.clearLayers();
+      elList.innerHTML = "";
+
+      if (FILTERED_ROWS.length === 0) {
+          elList.innerHTML = '<p class="small">No places found.</p>';
+          return;
+      }
+
+      FILTERED_ROWS.forEach(row => {
+        // Map Marker
+        const coord = row.Coordinate ? row.Coordinate.split(',').map(Number) : null;
+        if (coord) {
+          L.marker(coord).addTo(markersLayer).on("click", () => focusPlace(row));
+        }
+
+        // List Result Button
+        const btn = document.createElement("button");
+        btn.className = "btn ghost";
+        btn.style.width = "100%";
+        btn.style.fontSize = "13px";
+        btn.style.padding = "10px";
+        btn.style.justifyContent = "flex-start";
+        btn.style.textAlign = "left";
+        btn.textContent = row.Name;
+        btn.onclick = () => focusPlace(row);
+        elList.appendChild(btn);
+      });
+    }
+
+    /************************************************************
+     * 8) INITIALIZATION
+     ************************************************************/
+    async function init() {
+      const { data, error } = await supabase.from(TABLE_NAME).select("*");
+      if (error || !data) return;
+      
+      ALL_ROWS = data;
+      FILTERED_ROWS = data;
+
+      // Populate Filter Dropdowns
+      const uniqSorted = (arr) => [...new Set(arr.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+      
+      uniqSorted(data.map(r => r.Category)).forEach(c => elCategory.add(new Option(c, c)));
+      uniqSorted(data.map(r => r.Ordinance)).forEach(o => elOrdinance.add(new Option(o, o)));
+      
+      const years = uniqSorted(data.map(r => r.Year_Built)).sort((a,b) => Number(a) - Number(b));
+      years.forEach(y => elYear.add(new Option(y, y)));
+
+      renderUI();
+    }
+
+    elApply.onclick = applyFilters;
+    elReset.onclick = () => {
+        elCategory.value = ""; elOrdinance.value = ""; elYear.value = "";
+        FILTERED_ROWS = ALL_ROWS; renderUI();
+    };
+
+    init();
+  </script>
+</body>
+</html>
